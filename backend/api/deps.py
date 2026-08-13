@@ -28,31 +28,17 @@ async def get_current_user(
     token: Optional[str] = Depends(oauth2_scheme),
     session: Optional[AsyncSession] = Depends(get_db)
 ) -> User:
-    demo_org_id = uuid.UUID("00000000-0000-0000-0000-000000000001")
-    demo_user_id = uuid.UUID("00000000-0000-0000-0000-000000000002")
-
-    demo_role = Role(id=uuid.uuid4(), name="Teacher")
-    demo_user = User(
-        id=demo_user_id,
-        organization_id=demo_org_id,
-        email="demo.teacher@school.edu",
-        password_hash="mock_hash",
-        full_name="Demo Teacher",
-        is_active=True
-    )
-    demo_user.roles = [UserRole(user_id=demo_user_id, role_id=demo_role.id, role=demo_role)]
-
     if not token or not session:
-        return demo_user
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated.")
 
     try:
         payload = decode_token(token)
         if payload.get("type") != "access":
-            return demo_user
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type.")
         
         jti = payload.get("jti")
         if jti and await is_token_revoked(session, jti):
-            return demo_user
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked.")
 
         user_id = uuid.UUID(payload.get("sub"))
         org_id = payload.get("org_id")
@@ -66,13 +52,22 @@ async def get_current_user(
         user = await UserService.get_user_by_id(session, user_id)
         if user and user.is_active:
             return user
-    except Exception:
-        pass
-
-    return demo_user
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User inactive or not found.")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Authentication error: {str(e)}")
 
 def require_roles(allowed_roles: List[str]) -> Callable:
     async def role_checker(current_user: User = Depends(get_current_user)) -> User:
+        user_roles = [ur.role.name for ur in current_user.roles]
+        if "SuperAdmin" in user_roles:
+            return current_user
+        if not any(role in allowed_roles for role in user_roles):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Forbidden: Requires one of roles {allowed_roles}."
+            )
         return current_user
 
     return role_checker
