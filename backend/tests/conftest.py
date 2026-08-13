@@ -2,12 +2,18 @@ import pytest
 import asyncio
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.compiler import compiles
 from httpx import AsyncClient, ASGITransport
 from backend.models import Base, Role
 from backend.api.main import app
 from backend.api.deps import get_db
 
-# In-memory SQLite for fast testing
+# Polyfill PostgreSQL JSONB type to JSON for SQLite test engine compatibility
+@compiles(JSONB, 'sqlite')
+def compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
+
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 engine_test = create_async_engine(TEST_DATABASE_URL, connect_args={"check_same_thread": False})
