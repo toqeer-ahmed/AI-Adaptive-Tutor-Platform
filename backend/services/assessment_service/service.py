@@ -14,6 +14,8 @@ from backend.models.assessment import (
 )
 from backend.models.user import User
 from backend.services.assessment_service.evaluator import DeterministicMathEvaluator
+from backend.services.mastery_service.service import MasteryService
+from backend.services.mastery_service.policy import MasteryEvent
 from backend.services.audit_service import AuditService
 
 class AssessmentService:
@@ -67,7 +69,6 @@ class AssessmentService:
         session.add(assessment)
         await session.flush()
 
-        # Attach questions
         for idx, q_id in enumerate(question_ids, 1):
             aq = AssessmentQuestion(
                 id=uuid.uuid4(),
@@ -100,7 +101,6 @@ class AssessmentService:
         if not ass:
             raise ValueError("Assessment not found.")
 
-        # Check existing attempts
         att_res = await session.execute(
             select(AssessmentAttempt)
             .where(AssessmentAttempt.assessment_id == assessment_id, AssessmentAttempt.student_id == student.id)
@@ -144,7 +144,6 @@ class AssessmentService:
             correct_answer=question.correct_answer_json
         )
 
-        # Check if existing answer
         ans_res = await session.execute(
             select(StudentAnswer)
             .where(StudentAnswer.attempt_id == attempt_id, StudentAnswer.question_id == question_id)
@@ -169,6 +168,19 @@ class AssessmentService:
             answer.feedback = feedback
 
         await session.commit()
+
+        # Trigger Deterministic Mastery Update if question is linked to a concept
+        if question.concept_id:
+            curr_ver_id = question.curriculum_version_id or uuid.UUID("00000000-0000-0000-0000-000000000000")
+            event = MasteryEvent(
+                student_id=attempt.student_id,
+                concept_id=question.concept_id,
+                curriculum_version_id=curr_ver_id,
+                is_correct=is_correct,
+                item_difficulty=question.difficulty
+            )
+            await MasteryService.record_learning_event(session, question.organization_id, event)
+
         return answer
 
     @staticmethod
@@ -185,7 +197,6 @@ class AssessmentService:
         if not attempt:
             raise ValueError("Attempt not found.")
 
-        # Calculate final score deterministically
         total_score = sum(ans.points_awarded for ans in attempt.answers if ans.points_awarded is not None)
         max_score = float(len(attempt.assessment.questions))
 
