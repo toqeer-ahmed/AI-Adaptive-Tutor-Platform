@@ -10,6 +10,17 @@ from backend.models.security import (
     ParentStudentLink,
     SupportGrant
 )
+from backend.models.curriculum import (
+    SourceDocument,
+    Curriculum,
+    CurriculumVersion,
+    Chapter,
+    Topic,
+    Concept,
+    Skill,
+    LearningObjective,
+    ConceptPrerequisite
+)
 
 __all__ = [
     "Base",
@@ -30,4 +41,13 @@ __all__ = [
     "EmailVerificationToken",
     "ParentStudentLink",
     "SupportGrant",
+    "SourceDocument",
+    "Curriculum",
+    "CurriculumVersion",
+    "Chapter",
+    "Topic",
+    "Concept",
+    "Skill",
+    "LearningObjective",
+    "ConceptPrerequisite"
 ]
