@@ -16,6 +16,7 @@ from backend.models.user import User
 from backend.services.assessment_service.evaluator import DeterministicMathEvaluator
 from backend.services.mastery_service.service import MasteryService
 from backend.services.mastery_service.policy import MasteryEvent
+from backend.services.misconception_service.service import MisconceptionDetectionService
 from backend.services.audit_service import AuditService
 
 class AssessmentService:
@@ -169,7 +170,7 @@ class AssessmentService:
 
         await session.commit()
 
-        # Trigger Deterministic Mastery Update if question is linked to a concept
+        # 1. Trigger Deterministic Mastery Update
         if question.concept_id:
             curr_ver_id = question.curriculum_version_id or uuid.UUID("00000000-0000-0000-0000-000000000000")
             event = MasteryEvent(
@@ -180,6 +181,20 @@ class AssessmentService:
                 item_difficulty=question.difficulty
             )
             await MasteryService.record_learning_event(session, question.organization_id, event)
+
+            # 2. Trigger Misconception Detection Pipeline
+            stud_user = await session.execute(select(User).where(User.id == attempt.student_id))
+            student_obj = stud_user.scalars().first()
+            if student_obj:
+                await MisconceptionDetectionService.process_answer_evidence(
+                    session=session,
+                    student=student_obj,
+                    concept_id=question.concept_id,
+                    curriculum_version_id=curr_ver_id,
+                    is_correct=is_correct,
+                    submitted_answer=submitted_answer,
+                    expected_answer=question.correct_answer_json
+                )
 
         return answer
 
