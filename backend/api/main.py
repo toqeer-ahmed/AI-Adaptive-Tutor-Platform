@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from backend.config import settings
 from backend.config.logging import setup_logging
+from backend.api.middleware.observability import ObservabilityMiddleware
 from backend.api.routers import (
     auth,
     organizations,
@@ -26,7 +27,8 @@ from backend.api.routers import (
     evaluations,
     analytics,
     notifications,
-    ai_evaluation
+    ai_evaluation,
+    observability
 )
 
 setup_logging()
@@ -46,6 +48,9 @@ app = FastAPI(
     redoc_url="/redoc" if settings.DEBUG else None,
     lifespan=lifespan
 )
+
+# Custom Observability Middleware (Request-ID, Correlation-ID & Latency Headers)
+app.add_middleware(ObservabilityMiddleware)
 
 # Explicit CORS setup for localhost frontend
 app.add_middleware(
@@ -97,6 +102,7 @@ app.include_router(evaluations.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
 app.include_router(ai_evaluation.router, prefix="/api/v1")
+app.include_router(observability.router, prefix="/api/v1")
 
 # Root health endpoint
 @app.get("/health", tags=["Health"])
