@@ -37,6 +37,7 @@ from backend.models.misconception import MisconceptionTaxonomy, StudentMisconcep
 from backend.models.evaluation import SubjectiveEvaluationLog
 from backend.models.analytics import AnalyticsSummaryProvenance
 from backend.models.notification import Notification, NotificationPreference
+from backend.models.ai_evaluation import AIEvalDataset, AIEvalRun
 
 __all__ = [
     "Base",
@@ -83,5 +84,7 @@ __all__ = [
     "SubjectiveEvaluationLog",
     "AnalyticsSummaryProvenance",
     "Notification",
-    "NotificationPreference"
+    "NotificationPreference",
+    "AIEvalDataset",
+    "AIEvalRun"
 ]
