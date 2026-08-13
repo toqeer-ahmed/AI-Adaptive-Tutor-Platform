@@ -141,7 +141,7 @@ RULES:
             summary_type="TEACHER_CLASS_SUMMARY",
             source_metric_ids=metrics["source_metric_ids"],
             generated_summary_text=summary_text,
-            ai_model_name=ai_resp.model_name or "gpt-4o-mini",
+            ai_model_name=ai_resp.model or "gpt-4o-mini",
             prompt_hash=prompt_hash
         )
 
