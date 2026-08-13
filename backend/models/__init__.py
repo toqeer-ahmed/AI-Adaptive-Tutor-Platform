@@ -31,6 +31,7 @@ from backend.models.assessment import (
     AssessmentAttempt,
     StudentAnswer
 )
+from backend.models.mastery import StudentMastery, MasteryHistoryLog
 
 __all__ = [
     "Base",
@@ -67,5 +68,7 @@ __all__ = [
     "Assessment",
     "AssessmentQuestion",
     "AssessmentAttempt",
-    "StudentAnswer"
+    "StudentAnswer",
+    "StudentMastery",
+    "MasteryHistoryLog"
 ]
