@@ -10,11 +10,39 @@ class SourceDocument(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "source_documents"
 
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    school_id = Column(UUID(as_uuid=True), ForeignKey("schools.id", ondelete="SET NULL"), nullable=True, index=True)
+    curriculum_id = Column(UUID(as_uuid=True), ForeignKey("curricula.id", ondelete="SET NULL"), nullable=True, index=True)
+    curriculum_version_id = Column(UUID(as_uuid=True), ForeignKey("curriculum_versions.id", ondelete="SET NULL"), nullable=True, index=True)
     uploaded_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     file_name = Column(String(255), nullable=False)
     file_path = Column(String(512), nullable=False)
     file_size = Column(Integer, nullable=False)
     mime_type = Column(String(100), nullable=False)
+    status = Column(String(50), nullable=False, default="UPLOADED", index=True) # UPLOADED, SCANNING, PROCESSING, OCR_REQUIRED, PARSING, CHUNKING, COMPLETED, FAILED, REVIEW_REQUIRED
+    error_message = Column(Text, nullable=True)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+
+    chunks = relationship("DocumentChunk", back_populates="document", cascade="all, delete-orphan", order_by="DocumentChunk.chunk_index")
+
+class DocumentChunk(Base, UUIDPrimaryKeyMixin):
+    __tablename__ = "document_chunks"
+
+    document_id = Column(UUID(as_uuid=True), ForeignKey("source_documents.id", ondelete="CASCADE"), nullable=False, index=True)
+    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    curriculum_id = Column(UUID(as_uuid=True), ForeignKey("curricula.id", ondelete="SET NULL"), nullable=True, index=True)
+    curriculum_version_id = Column(UUID(as_uuid=True), ForeignKey("curriculum_versions.id", ondelete="SET NULL"), nullable=True, index=True)
+    chunk_index = Column(Integer, nullable=False)
+    text = Column(Text, nullable=False)
+    page_number = Column(Integer, nullable=True)
+    section = Column(String(255), nullable=True)
+    metadata_json = Column(JSONB, nullable=False, default=dict)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+
+    document = relationship("SourceDocument", back_populates="chunks")
+
+    __table_args__ = (
+        UniqueConstraint("document_id", "chunk_index", name="uq_document_chunk_index"),
+    )
 
 class Curriculum(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "curricula"
@@ -33,7 +61,7 @@ class CurriculumVersion(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     curriculum_id = Column(UUID(as_uuid=True), ForeignKey("curricula.id", ondelete="CASCADE"), nullable=False, index=True)
     version_number = Column(Integer, nullable=False)
-    status = Column(String(50), nullable=False, default="DRAFT", index=True) # DRAFT, REVIEW, APPROVED, PUBLISHED, ARCHIVED
+    status = Column(String(50), nullable=False, default="DRAFT", index=True)
     created_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     approved_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     published_by_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
@@ -43,10 +71,6 @@ class CurriculumVersion(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     curriculum = relationship("Curriculum", back_populates="versions")
     chapters = relationship("Chapter", back_populates="curriculum_version", cascade="all, delete-orphan", order_by="Chapter.sequence_order")
-
-    __table_args__ = (
-        UniqueConstraint("curriculum_id", "version_number", name="uq_curriculum_version_number"),
-    )
 
 class Chapter(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "chapters"

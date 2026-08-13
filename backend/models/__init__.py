@@ -12,6 +12,7 @@ from backend.models.security import (
 )
 from backend.models.curriculum import (
     SourceDocument,
+    DocumentChunk,
     Curriculum,
     CurriculumVersion,
     Chapter,
@@ -42,6 +43,7 @@ __all__ = [
     "ParentStudentLink",
     "SupportGrant",
     "SourceDocument",
+    "DocumentChunk",
     "Curriculum",
     "CurriculumVersion",
     "Chapter",
