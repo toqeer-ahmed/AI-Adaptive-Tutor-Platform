@@ -38,7 +38,9 @@ class UserService:
         role_res = await session.execute(select(Role).where(Role.name == role_name))
         role = role_res.scalars().first()
         if not role:
-            raise ValueError(f"Role '{role_name}' does not exist.")
+            role = Role(id=uuid.uuid4(), name=role_name, description=f"{role_name} role")
+            session.add(role)
+            await session.flush()
 
         user_role = UserRole(user_id=user.id, role_id=role.id)
         session.add(user_role)

@@ -135,6 +135,21 @@ async def logout(
         "meta": {}
     }
 
+@router.get("/me", response_model=dict)
+async def get_me(current_user: User = Depends(get_current_user)):
+    roles = [ur.role.name for ur in current_user.roles]
+    return {
+        "data": {
+            "id": str(current_user.id),
+            "email": current_user.email,
+            "full_name": current_user.full_name,
+            "organization_id": str(current_user.organization_id),
+            "roles": roles
+        },
+        "error": None,
+        "meta": {}
+    }
+
 @router.post("/refresh", response_model=dict)
 async def refresh(req: RefreshRequest, session: AsyncSession = Depends(get_db)):
     try:
