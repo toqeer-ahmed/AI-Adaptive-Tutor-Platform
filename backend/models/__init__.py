@@ -35,6 +35,7 @@ from backend.models.mastery import StudentMastery, MasteryHistoryLog
 from backend.models.tutor import TutorSession, TutorTurn
 from backend.models.misconception import MisconceptionTaxonomy, StudentMisconception
 from backend.models.evaluation import SubjectiveEvaluationLog
+from backend.models.analytics import AnalyticsSummaryProvenance
 
 __all__ = [
     "Base",
@@ -78,5 +79,6 @@ __all__ = [
     "TutorTurn",
     "MisconceptionTaxonomy",
     "StudentMisconception",
-    "SubjectiveEvaluationLog"
+    "SubjectiveEvaluationLog",
+    "AnalyticsSummaryProvenance"
 ]
