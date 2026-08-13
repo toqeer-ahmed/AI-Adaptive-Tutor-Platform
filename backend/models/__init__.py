@@ -36,6 +36,7 @@ from backend.models.tutor import TutorSession, TutorTurn
 from backend.models.misconception import MisconceptionTaxonomy, StudentMisconception
 from backend.models.evaluation import SubjectiveEvaluationLog
 from backend.models.analytics import AnalyticsSummaryProvenance
+from backend.models.notification import Notification, NotificationPreference
 
 __all__ = [
     "Base",
@@ -80,5 +81,7 @@ __all__ = [
     "MisconceptionTaxonomy",
     "StudentMisconception",
     "SubjectiveEvaluationLog",
-    "AnalyticsSummaryProvenance"
+    "AnalyticsSummaryProvenance",
+    "Notification",
+    "NotificationPreference"
 ]
