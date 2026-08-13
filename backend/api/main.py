@@ -24,7 +24,8 @@ from backend.api.routers import (
     tutor,
     misconceptions,
     evaluations,
-    analytics
+    analytics,
+    notifications
 )
 
 setup_logging()
@@ -93,6 +94,7 @@ app.include_router(tutor.router, prefix="/api/v1")
 app.include_router(misconceptions.router, prefix="/api/v1")
 app.include_router(evaluations.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
+app.include_router(notifications.router, prefix="/api/v1")
 
 # Root health endpoint
 @app.get("/health", tags=["Health"])
