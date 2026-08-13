@@ -34,6 +34,7 @@ from backend.models.assessment import (
 from backend.models.mastery import StudentMastery, MasteryHistoryLog
 from backend.models.tutor import TutorSession, TutorTurn
 from backend.models.misconception import MisconceptionTaxonomy, StudentMisconception
+from backend.models.evaluation import SubjectiveEvaluationLog
 
 __all__ = [
     "Base",
@@ -76,5 +77,6 @@ __all__ = [
     "TutorSession",
     "TutorTurn",
     "MisconceptionTaxonomy",
-    "StudentMisconception"
+    "StudentMisconception",
+    "SubjectiveEvaluationLog"
 ]

@@ -82,6 +82,8 @@ class StudentAnswer(Base, UUIDPrimaryKeyMixin):
     points_awarded = Column(Float, nullable=True)
     feedback = Column(Text, nullable=True)
     teacher_override = Column(Boolean, nullable=False, default=False)
+    ai_evaluation_json = Column(JSONB, nullable=True)
+    evaluation_status = Column(String(50), nullable=False, default="AUTOGRADED", index=True) # AUTOGRADED, NEEDS_TEACHER_REVIEW, TEACHER_APPROVED, TEACHER_OVERRIDDEN
     answered_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 
     attempt = relationship("AssessmentAttempt", back_populates="answers")
