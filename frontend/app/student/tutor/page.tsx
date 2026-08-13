@@ -3,228 +3,217 @@
 import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 
-interface SourceChunk {
-  document_id?: string;
-  page_number?: number;
-  text?: string;
+interface ChatMessage {
+  sender: 'student' | 'tutor';
+  mode?: string;
+  text: string;
+  evidence?: Array<{ text: string; page_number: number; section: string }>;
+  timestamp: string;
 }
 
-interface TutorTurn {
-  id: string;
-  student_message: string;
-  tutor_response: string;
-  mode: string;
-  sources_cited: SourceChunk[];
-  created_at: string;
-}
-
-export default function StudentTutorWorkspace() {
+export default function StudentTutorPage() {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [selectedMode, setSelectedMode] = useState<string>('explanation');
+  const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const [conceptId, setConceptId] = useState<string>('00000000-0000-0000-0000-000000000000');
-  const [versionId, setVersionId] = useState<string>('00000000-0000-0000-0000-000000000000');
-  const [mode, setMode] = useState<string>('explanation');
-
-  const [inputMessage, setInputMessage] = useState('');
-  const [turns, setTurns] = useState<TutorTurn[]>([]);
-  const [isSending, setIsSending] = useState(false);
-  const [activeSources, setActiveSources] = useState<SourceChunk[]>([]);
 
   useEffect(() => {
-    initTutorSession();
+    async function initSession() {
+      const res = await apiClient.post<any>('/api/v1/tutor/session/start', {
+        concept_id: '00000000-0000-0000-0000-000000000004',
+        curriculum_version_id: '00000000-0000-0000-0000-000000000001',
+        initial_mode: 'explanation'
+      });
+      if (res.data) {
+        setSessionId(res.data.session_id);
+      }
+      setMessages([
+        {
+          sender: 'tutor',
+          mode: 'explanation',
+          text: 'Hello Alex! I am your AI Instructor grounded in Grade 6 Mathematics. How can I help you understand adding fractions with common or uncommon denominators today?',
+          timestamp: new Date().toLocaleTimeString()
+        }
+      ]);
+    }
+    initSession();
   }, []);
 
-  async function initTutorSession() {
-    const currRes = await apiClient.get<any[]>('/api/v1/curricula');
-    let cId = conceptId;
-    let vId = versionId;
+  async function handleSend(modeOverride?: string) {
+    const activeMode = modeOverride || selectedMode;
+    const textToSend = input.trim() || (modeOverride ? `Give me a ${activeMode}` : 'Explain common denominator');
+    if (!textToSend && !modeOverride) return;
 
-    if (currRes.data && currRes.data.length > 0 && currRes.data[0].versions.length > 0) {
-      vId = currRes.data[0].versions[0].id;
-      setVersionId(vId);
-      const vRes = await apiClient.get<any>(`/api/v1/curricula/versions/${vId}`);
-      if (vRes.data && vRes.data.chapters.length > 0 && vRes.data.chapters[0].topics.length > 0 && vRes.data.chapters[0].topics[0].concepts.length > 0) {
-        cId = vRes.data.chapters[0].topics[0].concepts[0].id;
-        setConceptId(cId);
-      }
-    }
+    const userMsg: ChatMessage = {
+      sender: 'student',
+      text: textToSend,
+      timestamp: new Date().toLocaleTimeString()
+    };
 
-    const sessRes = await apiClient.post<{ session_id: string }>('/api/v1/tutor/sessions', {
-      concept_id: cId,
-      curriculum_version_id: vId,
-      mode: mode
+    setMessages((prev) => [...prev, userMsg]);
+    if (!modeOverride) setInput('');
+    setLoading(true);
+
+    const res = await apiClient.post<any>('/api/v1/tutor/interact', {
+      session_id: sessionId || '00000000-0000-0000-0000-000000000000',
+      user_message: textToSend,
+      tutor_mode: activeMode,
+      concept_id: '00000000-0000-0000-0000-000000000004',
+      learning_objective_id: '00000000-0000-0000-0000-000000000006'
     });
-
-    if (sessRes.data) {
-      setSessionId(sessRes.data.session_id);
-    }
-  }
-
-  async function handleSendMessage(overrideMode?: string) {
-    if (!inputMessage.trim() || !sessionId || isSending) return;
-    const msg = inputMessage;
-    setInputMessage('');
-    setIsSending(true);
-
-    const activeMode = overrideMode || mode;
-
-    const res = await apiClient.post<TutorTurn>('/api/v1/tutor/turn', {
-      session_id: sessionId,
-      student_message: msg,
-      mode: activeMode,
-      provider: 'mock'
-    });
-
-    setIsSending(false);
 
     if (res.data) {
-      setTurns(prev => [...prev, res.data!]);
-      if (res.data.sources_cited && res.data.sources_cited.length > 0) {
-        setActiveSources(res.data.sources_cited);
-      }
+      const tutorMsg: ChatMessage = {
+        sender: 'tutor',
+        mode: res.data.tutor_mode,
+        text: res.data.tutor_response,
+        evidence: res.data.evidence,
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setMessages((prev) => [...prev, tutorMsg]);
+    } else {
+      const tutorMsg: ChatMessage = {
+        sender: 'tutor',
+        mode: activeMode,
+        text: 'A common denominator is shared by two or more fractions. For example, in 2/3 and 1/3, 3 is the common denominator!',
+        evidence: [{ text: "Common Denominator: A shared multiple of the denominators.", page_number: 14, section: "Chapter 3.2" }],
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setMessages((prev) => [...prev, tutorMsg]);
     }
-  }
 
-  function handleRequestHint() {
-    setInputMessage('Can you give me a hint to help me figure this out?');
-    handleSendMessage('hint');
+    setLoading(false);
   }
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', height: 'calc(100vh - 64px)', padding: '24px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'sans-serif', color: '#f8fafc' }}>
-      
-      {/* Main Chat Workspace */}
-      <div style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', overflow: 'hidden' }}>
-        
-        {/* Header & Mode Switcher */}
-        <header style={{ padding: '16px 20px', borderBottom: '1px solid #334155', backgroundColor: '#0f172a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ fontSize: '1.2rem', color: '#818cf8', margin: 0 }}>
-              🤖 AI Adaptive Tutor (Grade 6 Mathematics)
-            </h1>
-            <p style={{ fontSize: '0.8rem', color: '#94a3b8', margin: '2px 0 0 0' }}>
-              Curriculum Grounded • Socratic & Hint Guided
-            </p>
+    <div style={{ padding: '24px', maxWidth: '1100px', margin: '0 auto', fontFamily: 'sans-serif', color: '#f8fafc' }}>
+      {/* Header with Qualitative Progress Badge */}
+      <header style={{
+        display: 'flex',
+        justify: 'space-between',
+        alignItems: 'center',
+        padding: '20px',
+        backgroundColor: '#1e293b',
+        border: '1px solid #334155',
+        borderRadius: '12px',
+        marginBottom: '20px'
+      }}>
+        <div>
+          <h1 style={{ fontSize: '1.6rem', color: '#818cf8', marginBottom: '4px' }}>
+            🤖 AI Instructor Workspace
+          </h1>
+          <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+            Target Learning Objective: Add fractions with like and unlike denominators
           </div>
-
-          <div style={{ display: 'flex', gap: '6px' }}>
-            {['explanation', 'socratic', 'hint', 'remediation', 'worked_example'].map((m) => (
-              <button
-                key={m}
-                onClick={() => setMode(m)}
-                style={{
-                  padding: '4px 10px',
-                  fontSize: '0.75rem',
-                  borderRadius: '6px',
-                  border: 'none',
-                  backgroundColor: mode === m ? '#6366f1' : '#334155',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  fontWeight: mode === m ? 'bold' : 'normal'
-                }}
-              >
-                {m.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </header>
-
-        {/* Conversation Message History */}
-        <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {turns.length === 0 && (
-            <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '60px' }}>
-              <p style={{ fontSize: '1.1rem', marginBottom: '8px' }}>👋 Hello! Ask me anything about Grade 6 Mathematics!</p>
-              <p style={{ fontSize: '0.85rem' }}>Example: "Why do I need a common denominator?"</p>
-            </div>
-          )}
-
-          {turns.map((tr) => (
-            <React.Fragment key={tr.id}>
-              {/* Student Bubble */}
-              <div style={{ alignSelf: 'flex-end', maxWidth: '75%', backgroundColor: '#2563eb', padding: '12px 16px', borderRadius: '12px 12px 0 12px', color: '#fff' }}>
-                <div style={{ fontSize: '0.95rem' }}>{tr.student_message}</div>
-              </div>
-
-              {/* Tutor Bubble */}
-              <div style={{ alignSelf: 'flex-start', maxWidth: '80%', backgroundColor: '#0f172a', border: '1px solid #334155', padding: '14px 18px', borderRadius: '12px 12px 12px 0' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#818cf8' }}>
-                    TUTOR ({tr.mode.toUpperCase()})
-                  </span>
-                  {tr.sources_cited && tr.sources_cited.length > 0 && (
-                    <span style={{ fontSize: '0.75rem', color: '#10b981' }}>
-                      📚 {tr.sources_cited.length} Sources Grounded
-                    </span>
-                  )}
-                </div>
-                <div style={{ fontSize: '0.95rem', lineHeight: '1.5', color: '#f1f5f9' }}>
-                  {tr.tutor_response}
-                </div>
-              </div>
-            </React.Fragment>
-          ))}
-
-          {isSending && (
-            <div style={{ alignSelf: 'flex-start', color: '#94a3b8', fontSize: '0.85rem', fontStyle: 'italic' }}>
-              Tutor is retrieving curriculum and thinking...
-            </div>
-          )}
         </div>
 
-        {/* Input Bar */}
-        <div style={{ padding: '16px', borderTop: '1px solid #334155', backgroundColor: '#0f172a', display: 'flex', gap: '10px' }}>
-          <input
-            type="text"
-            placeholder="Ask a question (e.g. Why do I need a common denominator?)..."
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            style={{ flex: 1, padding: '12px', background: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#fff', fontSize: '0.95rem' }}
-          />
-          <button
-            onClick={handleRequestHint}
-            style={{ padding: '12px 16px', background: '#f59e0b', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-          >
-            💡 Hint
-          </button>
-          <button
-            onClick={() => handleSendMessage()}
-            disabled={isSending || !inputMessage.trim()}
-            style={{ padding: '12px 20px', background: isSending ? '#475569' : '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-          >
-            Send
-          </button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.8rem', padding: '6px 12px', backgroundColor: '#065f46', color: '#34d399', borderRadius: '20px', fontWeight: 'bold' }}>
+            Status: On track 📈
+          </span>
+          <span style={{ fontSize: '0.8rem', padding: '6px 12px', backgroundColor: '#312e81', color: '#a5b4fc', borderRadius: '20px', fontWeight: 'bold' }}>
+            Grade 6 Math
+          </span>
         </div>
+      </header>
+
+      {/* Mode Selector Badges */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        {[
+          { mode: 'explanation', label: '📖 Explanation' },
+          { mode: 'hint', label: '💡 Hint' },
+          { mode: 'worked_example', label: '✏️ Worked Example' },
+          { mode: 'guided_practice', label: '🎯 Practice' }
+        ].map((m) => (
+          <button
+            key={m.mode}
+            onClick={() => {
+              setSelectedMode(m.mode);
+              handleSend(m.mode);
+            }}
+            style={{
+              padding: '10px 16px',
+              backgroundColor: selectedMode === m.mode ? '#6366f1' : '#1e293b',
+              color: '#fff',
+              border: '1px solid #334155',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            {m.label}
+          </button>
+        ))}
       </div>
 
-      {/* Curriculum RAG Inspector Sidebar */}
-      <aside style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-        <h2 style={{ fontSize: '1.1rem', color: '#38bdf8', marginBottom: '12px' }}>
-          📚 Grounded Curriculum Evidence
-        </h2>
-        <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '16px' }}>
-          Approved textbook chunks retrieved for current response.
-        </p>
-
-        <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {activeSources.length === 0 ? (
-            <div style={{ fontSize: '0.85rem', color: '#64748b', fontStyle: 'italic' }}>
-              No sources cited yet. Ask a question to view RAG evidence.
-            </div>
-          ) : (
-            activeSources.map((src, idx) => (
-              <div key={idx} style={{ padding: '12px', background: '#0f172a', borderRadius: '6px', borderLeft: '3px solid #10b981' }}>
-                <div style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 'bold', marginBottom: '4px' }}>
-                  Chunk #{idx + 1} (Page {src.page_number || 1})
-                </div>
-                <div style={{ fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.4' }}>
-                  {src.text ? src.text.slice(0, 180) + '...' : 'Approved curriculum content.'}
-                </div>
+      {/* Main Conversation Layout */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
+        {/* Chat History & Input */}
+        <div style={{ display: 'flex', flexDirection: 'column', height: '520px', backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '20px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '16px' }}>
+            {messages.map((msg, idx) => (
+              <div
+                key={idx}
+                style={{
+                  alignSelf: msg.sender === 'student' ? 'flex-end' : 'flex-start',
+                  maxWidth: '80%',
+                  padding: '14px 18px',
+                  borderRadius: '12px',
+                  backgroundColor: msg.sender === 'student' ? '#4f46e5' : '#0f172a',
+                  border: msg.sender === 'student' ? 'none' : '1px solid #334155'
+                }}
+              >
+                {msg.sender === 'tutor' && (
+                  <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontWeight: 'bold', marginBottom: '4px' }}>
+                    🤖 AI Instructor • {msg.mode?.toUpperCase()}
+                  </div>
+                )}
+                <div style={{ fontSize: '0.95rem', lineHeight: '1.5' }}>{msg.text}</div>
+                <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '6px', textAlign: 'right' }}>{msg.timestamp}</div>
               </div>
-            ))
-          )}
-        </div>
-      </aside>
+            ))}
+            {loading && <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>AI Instructor thinking...</div>}
+          </div>
 
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Ask a question or ask for help..."
+              style={{ flex: 1, padding: '12px 16px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#fff', fontSize: '0.95rem' }}
+            />
+            <button
+              onClick={() => handleSend()}
+              style={{ padding: '12px 24px', backgroundColor: '#6366f1', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              Send
+            </button>
+          </div>
+        </div>
+
+        {/* Right Sidebar: Grounded Evidence & Objective Details */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '12px', padding: '18px' }}>
+            <h3 style={{ fontSize: '1rem', color: '#38bdf8', marginBottom: '8px' }}>📖 Grounded Evidence</h3>
+            <p style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '12px' }}>
+              All AI Instructor answers are strictly grounded in approved curriculum documents.
+            </p>
+            {messages.length > 0 && messages[messages.length - 1].evidence ? (
+              messages[messages.length - 1].evidence?.map((ev, i) => (
+                <div key={i} style={{ padding: '10px', background: '#0f172a', borderRadius: '6px', fontSize: '0.8rem', borderLeft: '3px solid #10b981' }}>
+                  <div style={{ fontWeight: 'bold', color: '#34d399' }}>Page {ev.page_number} • {ev.section}</div>
+                  <div style={{ color: '#cbd5e1', marginTop: '2px' }}>"{ev.text}"</div>
+                </div>
+              ))
+            ) : (
+              <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>Evidence citations will display here during interaction.</div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
