@@ -25,7 +25,8 @@ from backend.api.routers import (
     misconceptions,
     evaluations,
     analytics,
-    notifications
+    notifications,
+    ai_evaluation
 )
 
 setup_logging()
@@ -95,6 +96,7 @@ app.include_router(misconceptions.router, prefix="/api/v1")
 app.include_router(evaluations.router, prefix="/api/v1")
 app.include_router(analytics.router, prefix="/api/v1")
 app.include_router(notifications.router, prefix="/api/v1")
+app.include_router(ai_evaluation.router, prefix="/api/v1")
 
 # Root health endpoint
 @app.get("/health", tags=["Health"])
