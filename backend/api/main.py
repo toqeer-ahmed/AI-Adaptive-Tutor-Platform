@@ -23,7 +23,8 @@ from backend.api.routers import (
     adaptive,
     tutor,
     misconceptions,
-    evaluations
+    evaluations,
+    analytics
 )
 
 setup_logging()
@@ -91,6 +92,7 @@ app.include_router(adaptive.router, prefix="/api/v1")
 app.include_router(tutor.router, prefix="/api/v1")
 app.include_router(misconceptions.router, prefix="/api/v1")
 app.include_router(evaluations.router, prefix="/api/v1")
+app.include_router(analytics.router, prefix="/api/v1")
 
 # Root health endpoint
 @app.get("/health", tags=["Health"])
