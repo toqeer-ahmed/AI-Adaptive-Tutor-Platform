@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from backend.config import settings
 from backend.config.logging import setup_logging
-from backend.api.routers import auth, organizations, users, classes, parents, audit, health
+from backend.api.routers import auth, organizations, users, classes, parents, audit, health, curriculum
 
 setup_logging()
 logger = logging.getLogger("api")
@@ -59,6 +59,7 @@ app.include_router(users.router, prefix="/api/v1")
 app.include_router(classes.router, prefix="/api/v1")
 app.include_router(parents.router, prefix="/api/v1")
 app.include_router(audit.router, prefix="/api/v1")
+app.include_router(curriculum.router, prefix="/api/v1")
 
 # Root health endpoint
 @app.get("/health", tags=["Health"])
