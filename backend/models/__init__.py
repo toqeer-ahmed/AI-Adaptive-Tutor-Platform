@@ -22,6 +22,7 @@ from backend.models.curriculum import (
     LearningObjective,
     ConceptPrerequisite
 )
+from backend.models.ai import ModelUsageRecord
 
 __all__ = [
     "Base",
@@ -51,5 +52,6 @@ __all__ = [
     "Concept",
     "Skill",
     "LearningObjective",
-    "ConceptPrerequisite"
+    "ConceptPrerequisite",
+    "ModelUsageRecord"
 ]
