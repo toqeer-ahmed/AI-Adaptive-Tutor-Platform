@@ -23,6 +23,7 @@ from backend.models.curriculum import (
     ConceptPrerequisite
 )
 from backend.models.ai import ModelUsageRecord
+from backend.models.rag import CurriculumVectorEmbeddings
 
 __all__ = [
     "Base",
@@ -53,5 +54,6 @@ __all__ = [
     "Skill",
     "LearningObjective",
     "ConceptPrerequisite",
-    "ModelUsageRecord"
+    "ModelUsageRecord",
+    "CurriculumVectorEmbeddings"
 ]
