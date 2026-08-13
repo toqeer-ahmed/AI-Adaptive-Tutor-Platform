@@ -24,6 +24,13 @@ from backend.models.curriculum import (
 )
 from backend.models.ai import ModelUsageRecord
 from backend.models.rag import CurriculumVectorEmbeddings
+from backend.models.assessment import (
+    QuestionBankItem,
+    Assessment,
+    AssessmentQuestion,
+    AssessmentAttempt,
+    StudentAnswer
+)
 
 __all__ = [
     "Base",
@@ -55,5 +62,10 @@ __all__ = [
     "LearningObjective",
     "ConceptPrerequisite",
     "ModelUsageRecord",
-    "CurriculumVectorEmbeddings"
+    "CurriculumVectorEmbeddings",
+    "QuestionBankItem",
+    "Assessment",
+    "AssessmentQuestion",
+    "AssessmentAttempt",
+    "StudentAnswer"
 ]
