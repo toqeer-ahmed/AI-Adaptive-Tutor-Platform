@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 
 from backend.config import settings
 from backend.config.logging import setup_logging
-from backend.api.routers import auth, organizations, users, classes, parents, audit, health, curriculum, documents, ai_curriculum, rag, assessment, mastery, adaptive, tutor
+from backend.api.routers import auth, organizations, users, classes, parents, audit, health, curriculum, documents, ai_curriculum, rag, assessment, mastery, adaptive, tutor, misconceptions
 
 setup_logging()
 logger = logging.getLogger("api")
@@ -26,10 +26,14 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS setup
+# Explicit CORS setup for localhost frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:3001"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -67,6 +71,7 @@ app.include_router(assessment.router)
 app.include_router(mastery.router, prefix="/api/v1")
 app.include_router(adaptive.router, prefix="/api/v1")
 app.include_router(tutor.router, prefix="/api/v1")
+app.include_router(misconceptions.router, prefix="/api/v1")
 
 # Root health endpoint
 @app.get("/health", tags=["Health"])
