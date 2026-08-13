@@ -4,8 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from backend.services.organization_service.service import OrganizationService
-from backend.services.user_service.service import UserService
-from backend.services.class_service.service import ClassService
+from backend.services.user_service.service import UserService, ClassService
 from backend.services.mastery_service.service import MasteryService
 from backend.services.mastery_service.policy import MasteryEvent
 from backend.services.analytics_service.service import AnalyticsAggregationService
@@ -19,13 +18,13 @@ async def test_analytics_determinism_and_provenance_logging(db_session: AsyncSes
     teacher = await UserService.create_user(db_session, org.id, "teach.prov@school.edu", "Pass123!", "Teacher Prov", "Teacher")
     student = await UserService.create_user(db_session, org.id, "stud.prov@school.edu", "Pass123!", "Student Prov", "Student")
 
-    class_obj = await ClassService.create_class(db_session, teacher, "Math Period 2", 6, "Mathematics")
-    await ClassService.enroll_student(db_session, class_obj.id, student.id)
+    class_obj = await ClassService.create_class(db_session, org.id, uuid.uuid4(), teacher.id, "Math Period 2", 6, "2026-2027")
+    await ClassService.enroll_student(db_session, org.id, class_obj.id, student.id)
 
     concept_id = uuid.uuid4()
     curr_ver_id = uuid.uuid4()
 
-    # 2. Record learning event (Mastery = 0.75)
+    # 2. Record learning event
     event = MasteryEvent(
         student_id=student.id,
         concept_id=concept_id,

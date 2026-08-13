@@ -98,7 +98,8 @@ async def test_rag_poisoning_unapproved_document_exclusion(db_session: AsyncSess
     org = await OrganizationService.create_organization(db_session, "Poison District", "POISONDIST")
     teacher = await UserService.create_user(db_session, org.id, "teach.poison@school.edu", "Pass123!", "Teach Poison", "Teacher")
 
-    curr = await CurriculumService.create_curriculum(db_session, teacher, "Poison Math", 6, "Mathematics")
+    created_curr = await CurriculumService.create_curriculum(db_session, teacher, "Poison Math", 6, "Mathematics")
+    curr = await CurriculumService.get_curriculum_by_id(db_session, created_curr.id)
 
     # Create unapproved draft document
     draft_doc = SourceDocument(

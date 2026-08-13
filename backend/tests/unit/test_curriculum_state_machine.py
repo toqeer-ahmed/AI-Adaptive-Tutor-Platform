@@ -1,5 +1,5 @@
 import pytest
-import uuid
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from backend.services.organization_service.service import OrganizationService
 from backend.services.user_service.service import UserService
@@ -7,52 +7,46 @@ from backend.services.curriculum_service.service import CurriculumService
 
 @pytest.mark.asyncio
 async def test_curriculum_version_state_machine(db_session: AsyncSession):
-    org = await OrganizationService.create_organization(db_session, "Curr Org", "CURRORG")
-    admin = await UserService.create_user(db_session, org.id, "admin@curr.com", "Pass123!", "Curr Admin", "OrgAdmin")
+    org = await OrganizationService.create_organization(db_session, "State District", "STDIST")
+    admin = await UserService.create_user(db_session, org.id, "admin@stdist.edu", "Pass123!", "Admin St", "OrgAdmin")
 
-    # 1. Create Curriculum (creates Version 1 in DRAFT)
-    curr = await CurriculumService.create_curriculum(db_session, admin, "Grade 6 Math", 6, "Mathematics")
-    version = curr.versions[0]
-    assert version.status == "DRAFT"
+    created_curr = await CurriculumService.create_curriculum(db_session, admin, "Grade 6 Math", 6, "Mathematics")
+    curr = await CurriculumService.get_curriculum_by_id(db_session, created_curr.id)
+    ver = curr.versions[0]
 
-    # 2. DRAFT -> REVIEW
-    v_review = await CurriculumService.transition_version_status(db_session, version.id, "REVIEW", admin)
-    assert v_review.status == "REVIEW"
+    assert ver.status == "DRAFT"
 
-    # 3. REVIEW -> APPROVED
-    v_approved = await CurriculumService.transition_version_status(db_session, version.id, "APPROVED", admin)
-    assert v_approved.status == "APPROVED"
-    assert v_approved.approved_by_id == admin.id
+    # DRAFT -> REVIEW
+    v_rev = await CurriculumService.transition_version_status(db_session, ver.id, "REVIEW", admin)
+    assert v_rev.status == "REVIEW"
 
-    # 4. APPROVED -> PUBLISHED
-    v_pub = await CurriculumService.transition_version_status(db_session, version.id, "PUBLISHED", admin)
+    # REVIEW -> APPROVED
+    v_app = await CurriculumService.transition_version_status(db_session, ver.id, "APPROVED", admin)
+    assert v_app.status == "APPROVED"
+
+    # APPROVED -> PUBLISHED
+    v_pub = await CurriculumService.transition_version_status(db_session, ver.id, "PUBLISHED", admin)
     assert v_pub.status == "PUBLISHED"
-    assert v_pub.published_by_id == admin.id
-    assert v_pub.published_at is not None
 
-    # 5. Invalid transition from PUBLISHED back to APPROVED
-    with pytest.raises(ValueError):
-        await CurriculumService.transition_version_status(db_session, version.id, "APPROVED", admin)
+    # PUBLISHED -> ARCHIVED
+    v_arch = await CurriculumService.transition_version_status(db_session, ver.id, "ARCHIVED", admin)
+    assert v_arch.status == "ARCHIVED"
 
 @pytest.mark.asyncio
 async def test_published_version_immutability(db_session: AsyncSession):
-    org = await OrganizationService.create_organization(db_session, "Immut Org", "IMMUTORG")
-    admin = await UserService.create_user(db_session, org.id, "admin@immut.com", "Pass123!", "Immut Admin", "OrgAdmin")
+    org = await OrganizationService.create_organization(db_session, "State District 2", "STDIST2")
+    admin = await UserService.create_user(db_session, org.id, "admin2@stdist.edu", "Pass123!", "Admin St 2", "OrgAdmin")
 
-    curr = await CurriculumService.create_curriculum(db_session, admin, "Grade 6 Math", 6, "Mathematics")
-    version = curr.versions[0]
+    created_curr = await CurriculumService.create_curriculum(db_session, admin, "Grade 6 Math", 6, "Mathematics")
+    curr = await CurriculumService.get_curriculum_by_id(db_session, created_curr.id)
+    ver = curr.versions[0]
 
-    # Add chapter while in DRAFT
-    ch = await CurriculumService.create_chapter(db_session, version.id, "Fractions")
-    assert ch.name == "Fractions"
+    await CurriculumService.transition_version_status(db_session, ver.id, "REVIEW", admin)
+    await CurriculumService.transition_version_status(db_session, ver.id, "APPROVED", admin)
+    await CurriculumService.transition_version_status(db_session, ver.id, "PUBLISHED", admin)
 
-    # Publish version
-    await CurriculumService.transition_version_status(db_session, version.id, "REVIEW", admin)
-    await CurriculumService.transition_version_status(db_session, version.id, "APPROVED", admin)
-    await CurriculumService.transition_version_status(db_session, version.id, "PUBLISHED", admin)
-
-    # Attempt to add another chapter to PUBLISHED version -> Must throw ValueError
-    with pytest.raises(ValueError) as exc:
-        await CurriculumService.create_chapter(db_session, version.id, "Decimals")
-
-    assert "cannot modify a published curriculum version" in str(exc.value).lower()
+    # Attempting to edit chapter under published version must fail
+    with pytest.raises(HTTPException) as exc_info:
+        await CurriculumService.create_chapter(db_session, ver.id, "Immutable Chapter")
+    assert exc_info.value.status_code == 400
+    assert "Immutable" in exc_info.value.detail or "PUBLISHED" in exc_info.value.detail

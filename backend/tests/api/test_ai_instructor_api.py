@@ -15,15 +15,18 @@ async def test_grade_6_student_tutor_workflow(async_client: AsyncClient, db_sess
     headers = {"Authorization": f"Bearer {s_token}"}
 
     # 2. Setup Curriculum & Concept
-    curr = await CurriculumService.create_curriculum(db_session, student, "Grade 6 Math", 6, "Mathematics")
-    ch = await CurriculumService.create_chapter(db_session, curr.versions[0].id, "Fractions")
+    created_curr = await CurriculumService.create_curriculum(db_session, student, "Grade 6 Math", 6, "Mathematics")
+    curr = await CurriculumService.get_curriculum_by_id(db_session, created_curr.id)
+    ver_id = curr.versions[0].id
+
+    ch = await CurriculumService.create_chapter(db_session, ver_id, "Fractions")
     tp = await CurriculumService.create_topic(db_session, ch.id, "Adding Fractions")
     cp = await CurriculumService.create_concept(db_session, tp.id, "Common Denominator")
 
     # 3. Initialize Tutor Session
     sess_res = await async_client.post(
         "/api/v1/tutor/sessions",
-        json={"concept_id": str(cp.id), "curriculum_version_id": str(curr.versions[0].id), "mode": "explanation"},
+        json={"concept_id": str(cp.id), "curriculum_version_id": str(ver_id), "mode": "explanation"},
         headers=headers
     )
     assert sess_res.status_code == 200

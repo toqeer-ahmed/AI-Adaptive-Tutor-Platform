@@ -61,7 +61,9 @@ def create_refresh_token(user_id: str, organization_id: str) -> tuple[str, str]:
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return token, jti
 
-def decode_token(token: str) -> Dict[str, Any]:
+def decode_token(token: Any) -> Dict[str, Any]:
+    if isinstance(token, tuple):
+        token = token[0]
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return payload

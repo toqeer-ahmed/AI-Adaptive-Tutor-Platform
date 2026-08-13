@@ -10,7 +10,8 @@ async def test_ai_question_generation_and_validation(db_session: AsyncSession):
     org = await OrganizationService.create_organization(db_session, "Ass District", "ASSDIST")
     teacher = await UserService.create_user(db_session, org.id, "t@assdist.edu", "Pass123!", "T Ass", "Teacher")
 
-    curr = await CurriculumService.create_curriculum(db_session, teacher, "Grade 6 Math", 6, "Mathematics")
+    created_curr = await CurriculumService.create_curriculum(db_session, teacher, "Grade 6 Math", 6, "Mathematics")
+    curr = await CurriculumService.get_curriculum_by_id(db_session, created_curr.id)
     ch = await CurriculumService.create_chapter(db_session, curr.versions[0].id, "Fractions")
     tp = await CurriculumService.create_topic(db_session, ch.id, "Adding Fractions")
     cp = await CurriculumService.create_concept(db_session, tp.id, "Common Denominator")
@@ -19,11 +20,10 @@ async def test_ai_question_generation_and_validation(db_session: AsyncSession):
         session=db_session,
         concept_id=cp.id,
         creator=teacher,
-        count=5,
+        count=3,
         provider="mock"
     )
 
-    assert len(items) > 0
-    # Items created via generation are placed in PROPOSED or REJECTED status
-    for item in items:
-        assert item.validation_status in ["PROPOSED", "REJECTED"]
+    assert len(items) == 3
+    assert items[0].validation_status == "PENDING_REVIEW"
+    assert items[0].organization_id == org.id

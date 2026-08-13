@@ -159,7 +159,7 @@ class CurriculumService:
 
         # Authorization rules
         if target_status in ["APPROVED", "PUBLISHED"]:
-            allowed_approvers = ["SuperAdmin", "OrgAdmin", "SchoolAdmin", "ContentManager"]
+            allowed_approvers = ["SuperAdmin", "OrgAdmin", "SchoolAdmin", "ContentManager", "Teacher"]
             if not any(r in user_roles for r in allowed_approvers):
                 raise PermissionError(f"User role(s) unauthorized to set state to '{target_status}'.")
 

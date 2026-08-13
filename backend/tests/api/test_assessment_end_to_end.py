@@ -5,7 +5,6 @@ from backend.services.organization_service.service import OrganizationService
 from backend.services.user_service.service import UserService
 from backend.services.user_service.auth import create_access_token
 from backend.services.curriculum_service.service import CurriculumService
-from backend.services.assessment_service.question_generator import QuestionGenerationEngine
 
 @pytest.mark.asyncio
 async def test_end_to_end_assessment_workflow(async_client: AsyncClient, db_session: AsyncSession):
@@ -21,8 +20,11 @@ async def test_end_to_end_assessment_workflow(async_client: AsyncClient, db_sess
     s_headers = {"Authorization": f"Bearer {s_token}"}
 
     # 2. Setup Curriculum & Concept
-    curr = await CurriculumService.create_curriculum(db_session, teacher, "Grade 6 Math", 6, "Mathematics")
-    ch = await CurriculumService.create_chapter(db_session, curr.versions[0].id, "Fractions")
+    created_curr = await CurriculumService.create_curriculum(db_session, teacher, "Grade 6 Math", 6, "Mathematics")
+    curr = await CurriculumService.get_curriculum_by_id(db_session, created_curr.id)
+    ver_id = curr.versions[0].id
+
+    ch = await CurriculumService.create_chapter(db_session, ver_id, "Fractions")
     tp = await CurriculumService.create_topic(db_session, ch.id, "Adding Fractions")
     cp = await CurriculumService.create_concept(db_session, tp.id, "Common Denominator")
 

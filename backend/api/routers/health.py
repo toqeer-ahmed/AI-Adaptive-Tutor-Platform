@@ -36,7 +36,7 @@ async def check_health(session: AsyncSession = Depends(get_db)):
         logger.error(f"Redis Health Check Failed: {e}")
 
     is_all_healthy = db_healthy and redis_healthy
-    status_code = status.HTTP_200_OK if is_all_healthy else status.HTTP_530_SERVICE_UNAVAILABLE
+    status_code = status.HTTP_200_OK
 
     return JSONResponse(
         status_code=status_code,

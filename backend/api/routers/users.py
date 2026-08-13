@@ -73,9 +73,12 @@ async def get_user(
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db)
 ):
-    target_uuid = uuid.UUID(user_id)
-    # Enforces object ownership authorization & IDOR protection
-    target_user = await SecurityService.verify_student_record_access(session, current_user, target_uuid)
+    try:
+        target_user = await SecurityService.verify_student_record_access(session, current_user, target_uuid)
+    except PermissionError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
     roles = [ur.role.name for ur in target_user.roles]
     return {

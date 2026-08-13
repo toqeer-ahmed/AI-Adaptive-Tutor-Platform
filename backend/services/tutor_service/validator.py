@@ -11,7 +11,7 @@ class TutorOutputValidator:
     def validate_tutor_turn(
         student_message: str,
         tutor_response: str,
-        has_rag_context: boolean = True
+        has_rag_context: bool = True
     ) -> Tuple[bool, str]:
         """
         Validates safety, prompt injection resistance, secret leakage, and grounding.

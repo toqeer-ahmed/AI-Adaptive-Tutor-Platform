@@ -20,7 +20,8 @@ async def test_cross_tenant_rag_security_isolation(async_client: AsyncClient, db
     headers_a = {"Authorization": f"Bearer {token_a}"}
 
     # 2. Admin B creates and publishes curriculum in Tenant B
-    curr_b = await CurriculumService.create_curriculum(db_session, admin_b, "Grade 6 Math B", 6, "Mathematics")
+    created_curr_b = await CurriculumService.create_curriculum(db_session, admin_b, "Grade 6 Math B", 6, "Mathematics")
+    curr_b = await CurriculumService.get_curriculum_by_id(db_session, created_curr_b.id)
     v_b = curr_b.versions[0]
     await CurriculumService.create_chapter(db_session, v_b.id, "Tenant B Secret Chapter")
 
@@ -60,7 +61,8 @@ async def test_draft_and_archived_curriculum_exclusion_from_student_rag(
     headers = {"Authorization": f"Bearer {token_s}"}
 
     # 2. Create Draft Curriculum (not published)
-    curr = await CurriculumService.create_curriculum(db_session, admin, "Draft Math", 6, "Mathematics")
+    created_curr = await CurriculumService.create_curriculum(db_session, admin, "Draft Math", 6, "Mathematics")
+    curr = await CurriculumService.get_curriculum_by_id(db_session, created_curr.id)
     v_draft = curr.versions[0]
     await CurriculumService.create_chapter(db_session, v_draft.id, "Unpublished Draft Fractions")
 
