@@ -163,6 +163,8 @@ async def list_class_students(
     class_uuid = uuid.UUID(class_id)
     try:
         await SecurityService.verify_class_access(session, current_user, class_uuid)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     except PermissionError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
 

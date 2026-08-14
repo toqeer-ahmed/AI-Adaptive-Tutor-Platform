@@ -62,13 +62,27 @@ export default function TeacherDashboardPage() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <WobblyButton href="/teacher/assessments" variant="red">
-            ✨ Question Bank
-          </WobblyButton>
-          <WobblyButton href="/teacher/curriculum/review" variant="blue">
-            📖 Syllabus Inspector
-          </WobblyButton>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <Link href="/teacher/classes">
+            <WobblyButton variant="secondary">
+              👥 Class Rosters
+            </WobblyButton>
+          </Link>
+          <Link href="/teacher/questions">
+            <WobblyButton variant="primary">
+              ✨ Question Bank
+            </WobblyButton>
+          </Link>
+          <Link href="/teacher/analytics">
+            <WobblyButton variant="accent">
+              🤖 AI Co-Pilot & Heatmap
+            </WobblyButton>
+          </Link>
+          <Link href="/teacher/curriculum/review">
+            <WobblyButton variant="secondary">
+              📖 Syllabus Review
+            </WobblyButton>
+          </Link>
         </div>
       </WobblyCard>
 
