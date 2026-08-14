@@ -80,7 +80,7 @@ class TutorQualityGuard:
         avg_word_length = sum(len(w) for w in words) / max(1, word_count)
         estimated_grade = round(min(8.0, max(4.0, (avg_word_length - 3.0) * 2.5 + 4.0)), 1)
 
-        is_acceptable = not has_dep_risk and not (has_leak and mode == "hint")
+        is_acceptable = not has_dep_risk and not (has_leak and mode in ["hint", "guided_practice", "socratic"])
 
         return PedagogicalQualityReport(
             is_acceptable=is_acceptable,
