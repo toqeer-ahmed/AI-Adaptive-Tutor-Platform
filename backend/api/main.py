@@ -34,8 +34,9 @@ from backend.api.routers import (
 setup_logging()
 logger = logging.getLogger("api")
 
-from backend.db.session import engine, is_sqlite
+from backend.db.session import engine, is_sqlite, AsyncSessionLocal
 from backend.models import Base
+from backend.services.user_service.service import UserService
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -44,8 +45,18 @@ async def lifespan(app: FastAPI):
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Local SQLite database schema verified & ready.")
+
+    # Seed default role-based test accounts if in development
+    try:
+        async with AsyncSessionLocal() as session:
+            await UserService.seed_default_dev_accounts(session)
+        logger.info("Standard role test accounts verified.")
+    except Exception as e:
+        logger.warning(f"Dev account seeding note: {e}")
+
     yield
     logger.info("Shutting down API service.")
+
 
 app = FastAPI(
     title="AI Adaptive Education Platform API",

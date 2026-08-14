@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AuthenticatedShell from '@/components/AuthenticatedShell';
 import { apiClient } from '@/lib/api-client';
 import {
   WobblyCard,
@@ -44,20 +45,11 @@ export default function TeacherDashboardPage() {
   }
 
   return (
-    <div style={{ padding: '32px 24px 60px', maxWidth: '1150px', margin: '0 auto' }}>
-      {/* Top Header */}
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <Link href="/" style={{ color: 'var(--pen-blue)', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>←</span> Back to Study Desk
-        </Link>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <HandBadge variant="purple">Teacher Command Studio</HandBadge>
-          <HandBadge variant="blue">Section 6-A</HandBadge>
-        </div>
-      </div>
+    <AuthenticatedShell allowedRoles={['Teacher', 'OrgAdmin', 'SchoolAdmin', 'SuperAdmin']} title="Teacher Command Studio">
+      <div style={{ padding: '28px 32px 60px', maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Header Gradebook Card */}
+        <WobblyCard decoration="tape" style={{ padding: '26px 30px', marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
 
-      {/* Header Gradebook Card */}
-      <WobblyCard decoration="tape" style={{ padding: '26px 30px', marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
             <span style={{ fontSize: '1.8rem' }}>🍎</span>
@@ -293,8 +285,10 @@ export default function TeacherDashboardPage() {
           </WobblyButton>
         </WobblyCard>
       )}
-    </div>
+      </div>
+    </AuthenticatedShell>
   );
 }
+
 
 

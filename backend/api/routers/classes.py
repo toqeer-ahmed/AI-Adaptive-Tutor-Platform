@@ -131,3 +131,52 @@ async def enroll_student(
         "error": None,
         "meta": {}
     }
+
+@router.get("", response_model=dict)
+async def list_classes(
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db)
+):
+    classes = await ClassService.get_classes_for_user(session, current_user)
+    return {
+        "data": [
+            {
+                "id": str(c.id),
+                "organization_id": str(c.organization_id),
+                "school_id": str(c.school_id),
+                "teacher_id": str(c.teacher_id),
+                "name": c.name,
+                "grade_level": c.grade_level,
+                "academic_year": c.academic_year
+            } for c in classes
+        ],
+        "error": None,
+        "meta": {"count": len(classes)}
+    }
+
+@router.get("/{class_id}/students", response_model=dict)
+async def list_class_students(
+    class_id: str,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db)
+):
+    class_uuid = uuid.UUID(class_id)
+    try:
+        await SecurityService.verify_class_access(session, current_user, class_uuid)
+    except PermissionError as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))
+
+    students = await ClassService.get_class_students(session, class_uuid)
+    return {
+        "data": [
+            {
+                "id": str(s.id),
+                "email": s.email,
+                "full_name": s.full_name,
+                "created_at": s.created_at.isoformat() if hasattr(s, 'created_at') and s.created_at else None
+            } for s in students
+        ],
+        "error": None,
+        "meta": {"count": len(students)}
+    }
+

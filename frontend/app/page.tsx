@@ -166,60 +166,84 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Pinned Operational Status Note */}
-        <div style={{
-          padding: '8px 18px',
-          background: '#ffffff',
-          border: '2px solid var(--pencil-black)',
-          borderRadius: 'var(--wobbly-sm)',
-          boxShadow: 'var(--shadow-hard-sm)',
-          position: 'relative',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-          transform: 'rotate(1deg)'
-        }}>
-          <div className="tape-strip" style={{ width: '60px', height: '18px', top: '-10px' }} />
-          <span style={{
-            width: '10px',
-            height: '10px',
-            borderRadius: '50%',
-            backgroundColor: health?.status === 'healthy' ? '#15803d' : '#b91c1c',
-            border: '1.5px solid var(--pencil-black)'
-          }} />
-          <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>
-            {loading ? 'Checking cluster...' : health?.status === 'healthy' ? 'API Operational (8000)' : 'API Degraded'}
-          </span>
+        {/* Header Right Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          {/* Pinned Operational Status Note */}
+          <div style={{
+            padding: '8px 16px',
+            background: '#ffffff',
+            border: '2px solid var(--pencil-black)',
+            borderRadius: 'var(--wobbly-sm)',
+            boxShadow: 'var(--shadow-hard-sm)',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transform: 'rotate(1deg)'
+          }}>
+            <div className="tape-strip" style={{ width: '50px', height: '16px', top: '-8px' }} />
+            <span style={{
+              width: '10px',
+              height: '10px',
+              borderRadius: '50%',
+              backgroundColor: health?.status === 'healthy' ? '#15803d' : '#b91c1c',
+              border: '1.5px solid var(--pencil-black)'
+            }} />
+            <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>
+              {loading ? 'Checking...' : health?.status === 'healthy' ? 'Cluster Online' : 'Offline'}
+            </span>
+          </div>
+
+          <Link href="/login" style={{ textDecoration: 'none' }}>
+            <WobblyButton variant="red" style={{ padding: '8px 18px', fontSize: '1rem' }}>
+              🔑 Sign In to Workspace →
+            </WobblyButton>
+          </Link>
         </div>
       </header>
 
-      {/* Hero Notebook Section */}
+      {/* Hero Welcome Banner */}
       <section style={{ textAlign: 'center', marginBottom: '56px', position: 'relative' }}>
-        <div style={{ display: 'inline-block', marginBottom: '8px' }}>
-          <HandBadge variant="yellow">
-            ✨ Curriculum-Grounded • Deterministic Mastery • Multi-Tenant
+        <div style={{ display: 'inline-block', marginBottom: '14px' }}>
+          <HandBadge variant="yellow" style={{ fontSize: '1rem', padding: '6px 16px', transform: 'rotate(-1deg)' }}>
+            ✨ Multi-Tenant Adaptive Education &bull; Grades 4 to 8
           </HandBadge>
         </div>
 
-        <h1 style={{ fontSize: 'clamp(2.4rem, 5vw, 3.8rem)', marginBottom: '12px', position: 'relative' }}>
-          The Human-Centered Layer for <br />
-          <span style={{ color: 'var(--marker-red)' }}>Adaptive K–12 Learning</span>
+        <h1 style={{ fontSize: '3.2rem', marginBottom: '16px', lineHeight: 1.15, color: 'var(--pencil-black)' }}>
+          Authentic AI Socratic Tutoring &amp;{' '}
+          <span style={{ position: 'relative', display: 'inline-block' }}>
+            <span style={{ color: 'var(--marker-red)' }}>Adaptive Mastery</span>
+            <ScribbleUnderline color="var(--pen-blue)" width={230} height={18} style={{ bottom: '-10px', left: '0' }} />
+          </span>
         </h1>
-        <div style={{ maxWidth: '320px', margin: '0 auto 16px' }}>
-          <ScribbleUnderline />
-        </div>
 
-        <p style={{ fontSize: '1.25rem', color: 'var(--pencil-subtle)', maxWidth: '700px', margin: '0 auto 28px', lineHeight: 1.5 }}>
-          Combining natural-language Socratic dialogue with mathematically deterministic knowledge tracing, human-in-the-loop curriculum control, and strict tenant isolation.
+        <p style={{ fontSize: '1.25rem', color: 'var(--pencil-subtle)', maxWidth: '720px', margin: '0 auto 28px', lineHeight: 1.5 }}>
+          Built with deterministic prerequisite learning paths, tenant-isolated textbook RAG, and human-in-the-loop teacher oversight.
         </p>
 
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <WobblyButton href="/student/tutor" variant="red">
-            Open AI Tutor Notebook →
-          </WobblyButton>
-          <WobblyButton href="/teacher/dashboard" variant="blue">
-            Educator Studio Desk
-          </WobblyButton>
+        {/* Quick Role Portal Buttons */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <Link href="/student/dashboard" style={{ textDecoration: 'none' }}>
+            <WobblyButton variant="blue" style={{ fontSize: '1.1rem', padding: '12px 24px' }}>
+              🎒 Student Study Desk
+            </WobblyButton>
+          </Link>
+          <Link href="/teacher/dashboard" style={{ textDecoration: 'none' }}>
+            <WobblyButton variant="yellow" style={{ fontSize: '1.1rem', padding: '12px 24px' }}>
+              🍎 Teacher Studio
+            </WobblyButton>
+          </Link>
+          <Link href="/parent/dashboard" style={{ textDecoration: 'none' }}>
+            <WobblyButton variant="green" style={{ fontSize: '1.1rem', padding: '12px 24px' }}>
+              🏡 Parent Digest
+            </WobblyButton>
+          </Link>
+          <Link href="/admin/dashboard" style={{ textDecoration: 'none' }}>
+            <WobblyButton variant="purple" style={{ fontSize: '1.1rem', padding: '12px 24px' }}>
+              ⚡ Admin Command
+            </WobblyButton>
+          </Link>
         </div>
 
         <div style={{ position: 'absolute', right: '4%', bottom: '-15px', transform: 'rotate(8deg)' }}>

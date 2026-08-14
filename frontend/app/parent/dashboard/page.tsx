@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import AuthenticatedShell from '@/components/AuthenticatedShell';
 import { apiClient } from '@/lib/api-client';
 import {
   WobblyCard,
@@ -68,21 +69,15 @@ export default function ParentDashboardPage() {
   }
 
   return (
-    <div style={{ padding: '32px 24px 60px', maxWidth: '1150px', margin: '0 auto' }}>
-      {/* Breadcrumb Navigation */}
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <Link href="/" style={{ color: 'var(--pen-blue)', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>←</span> Back to Study Desk
-        </Link>
-        <HandBadge variant="green">Parent Intelligence Digest</HandBadge>
-      </div>
+    <AuthenticatedShell allowedRoles={['Parent', 'OrgAdmin', 'SchoolAdmin', 'SuperAdmin']} title="Parent & Guardian Learning Digest">
+      <div style={{ padding: '28px 32px 60px', maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Header Corkboard Card */}
+        <WobblyCard decoration="tape" style={{ padding: '26px 30px', marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '1.8rem' }}>🏡</span>
+              <h1 style={{ fontSize: '2.1rem' }}>
 
-      {/* Header Corkboard Card */}
-      <WobblyCard decoration="tape" style={{ padding: '26px 30px', marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '1.8rem' }}>🏡</span>
-            <h1 style={{ fontSize: '2.1rem' }}>
               Parent & Guardian Learning Digest
             </h1>
           </div>
@@ -235,8 +230,10 @@ export default function ParentDashboardPage() {
           </WobblyCard>
         </div>
       </div>
-    </div>
+      </div>
+    </AuthenticatedShell>
   );
 }
+
 
 
