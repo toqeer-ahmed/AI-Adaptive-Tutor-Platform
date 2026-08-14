@@ -23,6 +23,11 @@ class UserService:
         if existing.scalars().first():
             raise ValueError(f"User with email '{email}' already exists.")
 
+        if isinstance(organization_id, str):
+            organization_id = uuid.UUID(organization_id)
+        if school_id and isinstance(school_id, str):
+            school_id = uuid.UUID(school_id)
+
         user = User(
             id=uuid.uuid4(),
             organization_id=organization_id,

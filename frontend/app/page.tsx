@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
 
 interface HealthStatus {
@@ -28,25 +29,61 @@ export default function Home() {
     checkHealth();
   }, []);
 
+  const navLinks = [
+    { title: '🤖 AI Instructor Chat Workspace', path: '/student/tutor', desc: 'Grade 6 grounded Socratic & hint tutoring' },
+    { title: '📊 Student Knowledge Map', path: '/student/mastery', desc: 'Deterministic concept mastery & review schedule' },
+    { title: '🎯 Adaptive Learning Portal', path: '/student/adaptive', desc: 'Rule-based next activity recommendations' },
+    { title: '📝 Teacher Quiz & Question Builder', path: '/teacher/assessments', desc: 'AI question generator & verification' },
+    { title: '✍️ Student Assessment Player', path: '/student/assessments', desc: 'Quiz player with deterministic scoring' },
+    { title: '🔍 Curriculum RAG Search', path: '/student/rag', desc: 'Pre-retrieval tenant-isolated hybrid vector search' },
+    { title: '📄 Curriculum Human Review', path: '/teacher/curriculum/review', desc: 'Teacher review inspector for AI extractions' }
+  ];
+
   return (
-    <main style={{ padding: '40px', maxWidth: '900px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '32px' }}>
+    <main style={{ padding: '40px', maxWidth: '1000px', margin: '0 auto', fontFamily: 'sans-serif', color: '#f8fafc' }}>
+      <header style={{ marginBottom: '32px', textAlign: 'center' }}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '8px', color: '#818cf8' }}>
           AI Adaptive Education Platform
         </h1>
         <p style={{ fontSize: '1.1rem', color: '#94a3b8' }}>
-          Production-grade Multi-Tenant Learning System (Grades 4–8)
+          Production-Grade Multi-Tenant Learning System (Grades 4–8)
         </p>
       </header>
 
+      {/* Navigation Portal Hub */}
+      <section style={{ marginBottom: '40px' }}>
+        <h2 style={{ fontSize: '1.4rem', color: '#38bdf8', marginBottom: '16px' }}>🚀 Feature Portals</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          {navLinks.map((link) => (
+            <Link key={link.path} href={link.path} style={{ textDecoration: 'none' }}>
+              <div style={{
+                padding: '18px',
+                backgroundColor: '#1e293b',
+                border: '1px solid #334155',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'border-color 0.2s'
+              }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#f8fafc', marginBottom: '4px' }}>
+                  {link.title}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
+                  {link.desc}
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* System Health Status */}
       <section style={{
         backgroundColor: '#1e293b',
         border: '1px solid #334155',
         borderRadius: '12px',
-        padding: '24px',
-        marginBottom: '24px'
+        padding: '24px'
       }}>
-        <h2 style={{ fontSize: '1.4rem', marginBottom: '16px', color: '#f8fafc' }}>
+        <h2 style={{ fontSize: '1.3rem', marginBottom: '16px', color: '#f8fafc' }}>
           System Health Status
         </h2>
         {loading ? (
@@ -77,7 +114,7 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <p style={{ color: '#f87171' }}>Backend API unreachable at NEXT_PUBLIC_API_URL</p>
+          <p style={{ color: '#f87171' }}>Backend API unreachable at http://localhost:8000</p>
         )}
       </section>
     </main>

@@ -22,7 +22,7 @@ async def test_cross_tenant_school_creation_forbidden(async_client: AsyncClient,
     )
 
     # 3. Generate token for Org B user
-    token_b = create_access_token(
+    token_b, _ = create_access_token(
         user_id=str(user_b.id),
         organization_id=str(org_b.id),
         roles=["OrgAdmin"]
@@ -59,7 +59,7 @@ async def test_cross_tenant_school_listing_isolation(async_client: AsyncClient, 
         role_name="Teacher"
     )
 
-    token_b = create_access_token(
+    token_b, _ = create_access_token(
         user_id=str(user_b.id),
         organization_id=str(org_b.id),
         roles=["Teacher"]

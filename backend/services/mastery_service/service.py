@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, List
+from typing import Optional, List, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -8,19 +8,33 @@ from backend.models.mastery import StudentMastery, MasteryHistoryLog
 from backend.services.mastery_service.policy import MasteryEvent, MasteryUpdate, MasteryPolicyV1
 from backend.services.audit_service import AuditService
 
+def to_uuid(val):
+    if isinstance(val, uuid.UUID):
+        return val
+    if isinstance(val, str):
+        return uuid.UUID(val)
+    if isinstance(val, int):
+        return uuid.UUID(int=val)
+    return uuid.UUID("00000000-0000-0000-0000-000000000000")
+
 class MasteryService:
     @staticmethod
     async def get_or_create_mastery(
         session: AsyncSession,
-        organization_id: uuid.UUID,
-        student_id: uuid.UUID,
-        concept_id: uuid.UUID,
-        curriculum_version_id: uuid.UUID
+        organization_id: Any,
+        student_id: Any,
+        concept_id: Any,
+        curriculum_version_id: Any
     ) -> StudentMastery:
+        org_uuid = to_uuid(organization_id)
+        stud_uuid = to_uuid(student_id)
+        conc_uuid = to_uuid(concept_id)
+        curr_ver_uuid = to_uuid(curriculum_version_id)
+
         stmt = select(StudentMastery).where(
-            StudentMastery.student_id == student_id,
-            StudentMastery.concept_id == concept_id,
-            StudentMastery.curriculum_version_id == curriculum_version_id
+            StudentMastery.student_id == stud_uuid,
+            StudentMastery.concept_id == conc_uuid,
+            StudentMastery.curriculum_version_id == curr_ver_uuid
         )
         res = await session.execute(stmt)
         sm = res.scalars().first()
@@ -28,10 +42,10 @@ class MasteryService:
         if not sm:
             sm = StudentMastery(
                 id=uuid.uuid4(),
-                organization_id=organization_id,
-                student_id=student_id,
-                concept_id=concept_id,
-                curriculum_version_id=curriculum_version_id,
+                organization_id=org_uuid,
+                student_id=stud_uuid,
+                concept_id=conc_uuid,
+                curriculum_version_id=curr_ver_uuid,
                 mastery_score=0.0,
                 confidence=0.0,
                 attempt_count=0,

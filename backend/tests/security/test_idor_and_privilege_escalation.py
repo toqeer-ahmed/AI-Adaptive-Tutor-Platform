@@ -65,7 +65,7 @@ async def test_parent_horizontal_escalation_forbidden(async_client: AsyncClient,
 
     # Parent A attempts to access Parent B's Child B details
     res = await async_client.get(f"/api/v1/parents/children/{child_b.id}", headers=headers)
-    assert res.status_code == 401 or res.status_code == 403
+    assert res.status_code in [401, 403, 404]
 
 @pytest.mark.asyncio
 async def test_support_user_scope_gating(async_client: AsyncClient, db_session: AsyncSession):

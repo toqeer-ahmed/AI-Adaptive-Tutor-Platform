@@ -34,9 +34,16 @@ from backend.api.routers import (
 setup_logging()
 logger = logging.getLogger("api")
 
+from backend.db.session import engine, is_sqlite
+from backend.models import Base
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting AI Adaptive Education Platform API (Env: {settings.ENVIRONMENT})")
+    if is_sqlite:
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Local SQLite database schema verified & ready.")
     yield
     logger.info("Shutting down API service.")
 

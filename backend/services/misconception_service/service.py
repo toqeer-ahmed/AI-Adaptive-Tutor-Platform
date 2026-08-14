@@ -106,7 +106,7 @@ class MisconceptionDetectionService:
                     if sm and sm.misconception_tags:
                         sm.misconception_tags = [t for t in sm.misconception_tags if t != smisc.misconception_id]
 
-            await session.commit()
+            await session.flush()
             return active_misconceptions[0] if active_misconceptions else None
 
         # CASE B: Student answered INCORRECTLY -> Evidence Extraction & LLM Proposal
@@ -219,7 +219,7 @@ If the error is ambiguous or does not match any taxonomy item with high confiden
             if len(ev) >= 2 and smisc.status == "DETECTED":
                 smisc.status = "PERSISTENT"
 
-        await session.commit()
+        await session.flush()
 
         # Update StudentMastery misconception_tags to inform Adaptive Engine
         sm_res = await session.execute(
@@ -233,7 +233,7 @@ If the error is ambiguous or does not match any taxonomy item with high confiden
             tags = set(sm.misconception_tags or [])
             tags.add(str(target_tax.id))
             sm.misconception_tags = list(tags)
-            await session.commit()
+            await session.flush()
 
         await AuditService.log_event(
             session=session,

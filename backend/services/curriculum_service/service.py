@@ -51,7 +51,6 @@ class CurriculumService:
         )
         session.add(version)
         await session.commit()
-        await session.refresh(curriculum)
 
         await AuditService.log_event(
             session=session,
@@ -63,7 +62,7 @@ class CurriculumService:
             details={"name": name, "grade_level": grade_level, "subject": subject_name}
         )
 
-        return curriculum
+        return await CurriculumService.get_curriculum_by_id(session, curriculum.id)
 
     @staticmethod
     async def get_curriculum_by_id(session: AsyncSession, curriculum_id: uuid.UUID) -> Optional[Curriculum]:

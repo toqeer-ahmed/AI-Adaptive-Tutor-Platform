@@ -74,6 +74,7 @@ async def get_user(
     session: AsyncSession = Depends(get_db)
 ):
     try:
+        target_uuid = uuid.UUID(user_id)
         target_user = await SecurityService.verify_student_record_access(session, current_user, target_uuid)
     except PermissionError as e:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=str(e))

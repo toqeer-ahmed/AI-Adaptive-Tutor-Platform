@@ -56,13 +56,17 @@ class AnalyticsAggregationService:
 
         remediation = []
         challenge = []
+        remediation_set = set()
+        challenge_set = set()
         student_map = {e.student_id: e.student.full_name for e in enrollments if e.student}
 
         for m in masteries:
             s_name = student_map.get(m.student_id, "Student")
-            if m.mastery_score < 0.40 and s_name not in [s["name"] for s in remediation]:
+            if m.mastery_score < 0.40 and m.student_id not in remediation_set:
+                remediation_set.add(m.student_id)
                 remediation.append({"student_id": str(m.student_id), "name": s_name, "mastery_score": m.mastery_score})
-            elif m.mastery_score >= 0.90 and s_name not in [s["name"] for s in challenge]:
+            elif m.mastery_score >= 0.90 and m.student_id not in challenge_set:
+                challenge_set.add(m.student_id)
                 challenge.append({"student_id": str(m.student_id), "name": s_name, "mastery_score": m.mastery_score})
 
         # Misconception Trends

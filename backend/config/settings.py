@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "adaptive_edu_db"
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres_dev_password@localhost:5432/adaptive_edu_db"
-    DATABASE_SYNC_URL: str = "postgresql+psycopg2://postgres:postgres_dev_password@localhost:5432/adaptive_edu_db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///adaptive_edu_dev.db"
+    DATABASE_SYNC_URL: str = "sqlite:///adaptive_edu_dev.db"
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
@@ -40,3 +40,7 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
+
+if settings.ENVIRONMENT.lower() == "production" and "super-secret-development-key" in settings.SECRET_KEY:
+    raise ValueError("CRITICAL SECURITY ERROR: Default SECRET_KEY detected in production environment! Must be overridden via environment variable.")
+

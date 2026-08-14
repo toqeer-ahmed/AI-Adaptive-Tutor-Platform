@@ -4,8 +4,9 @@ import logging
 from typing import List, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
-from backend.models.curriculum import Concept, LearningObjective
+from backend.models.curriculum import Concept, Topic, LearningObjective
 from backend.models.assessment import QuestionBankItem
 from backend.models.user import User
 from backend.services.ai_orchestration.contracts import AIRequest
@@ -24,7 +25,11 @@ class QuestionGenerationEngine:
         count: int = 10,
         provider: str = "mock"
     ) -> List[QuestionBankItem]:
-        concept_res = await session.execute(select(Concept).where(Concept.id == concept_id))
+        concept_res = await session.execute(
+            select(Concept)
+            .options(selectinload(Concept.topic).selectinload(Topic.chapter))
+            .where(Concept.id == concept_id)
+        )
         concept = concept_res.scalars().first()
         if not concept:
             raise ValueError("Concept not found.")
@@ -127,10 +132,13 @@ OUTPUT FORMAT (JSON Object):
 
             status = "PROPOSED" if is_valid else "REJECTED"
 
+            c_ver_id = concept.topic.chapter.curriculum_version_id if (concept and concept.topic and concept.topic.chapter) else None
+
             q_item = QuestionBankItem(
                 id=uuid.uuid4(),
                 organization_id=creator.organization_id,
                 concept_id=concept_id,
+                curriculum_version_id=c_ver_id,
                 difficulty=diff,
                 question_type=qtype,
                 question_text=qtext,

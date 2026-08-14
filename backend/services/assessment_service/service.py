@@ -168,11 +168,20 @@ class AssessmentService:
             answer.points_awarded = pts_mult
             answer.feedback = feedback
 
-        await session.commit()
+        await session.flush()
 
         # 1. Trigger Deterministic Mastery Update
         if question.concept_id:
-            curr_ver_id = question.curriculum_version_id or uuid.UUID("00000000-0000-0000-0000-000000000000")
+            c_ver = question.curriculum_version_id
+            if isinstance(c_ver, str):
+                curr_ver_id = uuid.UUID(c_ver)
+            elif isinstance(c_ver, int):
+                curr_ver_id = uuid.UUID(int=c_ver)
+            elif isinstance(c_ver, uuid.UUID):
+                curr_ver_id = c_ver
+            else:
+                curr_ver_id = uuid.UUID("00000000-0000-0000-0000-000000000000")
+
             event = MasteryEvent(
                 student_id=attempt.student_id,
                 concept_id=question.concept_id,
@@ -196,6 +205,7 @@ class AssessmentService:
                     expected_answer=question.correct_answer_json
                 )
 
+        await session.commit()
         return answer
 
     @staticmethod
