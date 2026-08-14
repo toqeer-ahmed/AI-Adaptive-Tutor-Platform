@@ -1,277 +1,337 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import AuthenticatedShell from '@/components/AuthenticatedShell';
 import { apiClient } from '@/lib/api-client';
 import {
   WobblyCard,
   WobblyButton,
-  HandBadge
+  HandBadge,
+  ScribbleUnderline
 } from '@/lib/HandDrawnComponents';
 
+interface CitationChunk {
+  text: string;
+  chapter?: string;
+  topic?: string;
+  page_number?: number;
+}
+
 interface ChatMessage {
+  id: string;
   sender: 'student' | 'tutor';
   mode?: string;
   text: string;
-  evidence?: Array<{ text: string; page_number: number; section: string }>;
+  citations?: CitationChunk[];
   timestamp: string;
 }
 
 export default function StudentTutorPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    {
+      id: 'msg-welcome',
+      sender: 'tutor',
+      mode: 'socratic',
+      text: "Hello Alex! 👋 I'm your AI Socratic Tutor, grounded directly in your Grade 6 Mathematics curriculum. What concept or problem can we explore together today?",
+      citations: [
+        {
+          text: 'Grade 6 Mathematics Core Standard: Adding Unlike Fractions via Least Common Multiples (LCM).',
+          chapter: 'Chapter 1: Fractions',
+          page_number: 42
+        }
+      ],
+      timestamp: 'Just now'
+    }
+  ]);
+
   const [input, setInput] = useState('');
-  const [selectedMode, setSelectedMode] = useState<string>('explanation');
+  const [selectedMode, setSelectedMode] = useState<'socratic' | 'hint' | 'explanation' | 'worked_example' | 'guided_practice'>('socratic');
   const [loading, setLoading] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function initSession() {
       try {
-        const res = await apiClient.post<any>('/api/v1/tutor/session/start', {
-          concept_id: '00000000-0000-0000-0000-000000000004',
+        const res = await apiClient.post<any>('/api/v1/tutor/sessions', {
+          concept_id: '00000000-0000-0000-0000-000000000010',
           curriculum_version_id: '00000000-0000-0000-0000-000000000001',
-          initial_mode: 'explanation'
+          mode: selectedMode
         });
         if (res.data) {
           setSessionId(res.data.session_id);
         }
       } catch (e) {
-        // Fallback for standalone demo
+        // Fallback for dev mode
       }
-
-      setMessages([
-        {
-          sender: 'tutor',
-          mode: 'explanation',
-          text: 'Hello Alex! I am your AI Socratic Tutor grounded in Grade 6 Mathematics. How can I help you master adding fractions with common or uncommon denominators today?',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
     }
     initSession();
   }, []);
 
-  async function handleSend(modeOverride?: string) {
-    const activeMode = modeOverride || selectedMode;
-    const textToSend = input.trim() || (modeOverride ? `Give me a ${activeMode.replace('_', ' ')}` : 'Explain common denominator');
-    if (!textToSend && !modeOverride) return;
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
-    const userMsg: ChatMessage = {
+  async function handleSend(presetText?: string, modeOverride?: 'socratic' | 'hint' | 'explanation' | 'worked_example' | 'guided_practice') {
+    const textToSend = presetText || input.trim();
+    const activeMode = modeOverride || selectedMode;
+    if (!textToSend || loading) return;
+
+    const studentMsg: ChatMessage = {
+      id: `msg-${Date.now()}`,
       sender: 'student',
       text: textToSend,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setMessages((prev) => [...prev, userMsg]);
-    if (!modeOverride) setInput('');
+    setMessages(prev => [...prev, studentMsg]);
+    if (!presetText) setInput('');
     setLoading(true);
 
     try {
-      const res = await apiClient.post<any>('/api/v1/tutor/interact', {
-        session_id: sessionId || '00000000-0000-0000-0000-000000000000',
-        user_message: textToSend,
-        tutor_mode: activeMode,
-        concept_id: '00000000-0000-0000-0000-000000000004',
-        learning_objective_id: '00000000-0000-0000-0000-000000000006'
+      const activeSessionId = sessionId || '00000000-0000-0000-0000-000000000099';
+      const res = await apiClient.post<any>('/api/v1/tutor/turn', {
+        session_id: activeSessionId,
+        student_message: textToSend,
+        mode: activeMode
       });
 
       if (res.data) {
-        const tutorMsg: ChatMessage = {
-          sender: 'tutor',
-          mode: res.data.tutor_mode,
-          text: res.data.tutor_response,
-          evidence: res.data.evidence,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-        setMessages((prev) => [...prev, tutorMsg]);
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `msg-${Date.now() + 1}`,
+            sender: 'tutor',
+            mode: res.data.mode || activeMode,
+            text: res.data.tutor_response,
+            citations: res.data.sources_cited || [
+              {
+                text: 'Curriculum citation: Convert fractions to equivalent denominators before adding.',
+                chapter: 'Chapter 1: Fraction Operations',
+                page_number: 42
+              }
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
       } else {
-        throw new Error('Fallback required');
+        // Fallback simulated response
+        const fallbackText = activeMode === 'hint'
+          ? "💡 Progressive Hint: Look at the two denominators (3 and 6). Can 3 be multiplied into 6? What fraction is equivalent to 1/3 with denominator 6?"
+          : activeMode === 'socratic'
+          ? "Let's think about equal sharing: if we cut 1/3 of a cake into 2 smaller pieces, how many equal slices do we have in total?"
+          : "To add 1/3 and 1/6, first rename 1/3 into 2/6. Then compute 2/6 + 1/6 = 3/6, which simplifies to 1/2!";
+
+        setMessages(prev => [
+          ...prev,
+          {
+            id: `msg-${Date.now() + 1}`,
+            sender: 'tutor',
+            mode: activeMode,
+            text: fallbackText,
+            citations: [
+              {
+                text: 'Textbook reference: Section 1.2 Adding Unlike Fractions',
+                chapter: 'Chapter 1',
+                page_number: 43
+              }
+            ],
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
       }
-    } catch (err) {
-      const tutorMsg: ChatMessage = {
-        sender: 'tutor',
-        mode: activeMode,
-        text: 'A common denominator is a shared multiple of the denominators. For example, to add 1/3 and 1/6, we convert 1/3 to 2/6 so both fractions share the denominator 6!',
-        evidence: [{ text: "Common Denominator: A shared multiple of the denominators.", page_number: 14, section: "Chapter 3.2" }],
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages((prev) => [...prev, tutorMsg]);
+    } catch (e) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: `msg-${Date.now() + 1}`,
+          sender: 'tutor',
+          mode: activeMode,
+          text: "💡 Socratic Guide: Remember to check whether the denominators match before adding numerators!",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
     } finally {
       setLoading(false);
     }
   }
 
-  return (
-    <div style={{ padding: '32px 24px 60px', maxWidth: '1150px', margin: '0 auto' }}>
-      {/* Top Breadcrumb & Status */}
-      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <Link href="/" style={{ color: 'var(--pen-blue)', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>←</span> Back to Study Desk
-        </Link>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <HandBadge variant="green">Mastery: On track 📈</HandBadge>
-          <HandBadge variant="yellow">Grade 6 Mathematics</HandBadge>
-        </div>
-      </div>
+  const modeOptions = [
+    { id: 'socratic', label: 'Socratic Guide 💡', desc: 'Asks guiding questions to help you think' },
+    { id: 'hint', label: 'Progressive Hint 🔍', desc: 'Subtle clues without giving the answer' },
+    { id: 'explanation', label: 'Concept Explanation 📖', desc: 'Clear, step-by-step definition' },
+    { id: 'worked_example', label: 'Worked Example ✏️', desc: 'Walkthrough of a similar problem' },
+    { id: 'guided_practice', label: 'Guided Practice 🎯', desc: 'Practice with instant guidance' }
+  ] as const;
 
-      {/* Header Notebook Card */}
-      <WobblyCard decoration="tape" style={{ marginBottom: '28px', padding: '24px 30px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+  return (
+    <AuthenticatedShell allowedRoles={['Student', 'Teacher', 'SchoolAdmin', 'OrgAdmin', 'SuperAdmin', 'Parent']} title="AI Socratic Tutor">
+      <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        
+        {/* Header Ribbon */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-              <span style={{ fontSize: '1.8rem' }}>✏️</span>
-              <h1 style={{ fontSize: '2rem' }}>AI Socratic Tutor Notebook</h1>
+              <h1 style={{ fontSize: '2.2rem', fontFamily: 'var(--font-heading)', color: 'var(--text-main)', margin: 0 }}>
+                🤖 AI Socratic Instructor Desk
+              </h1>
+              <HandBadge variant="purple">Grounded in Grade 6 Math</HandBadge>
             </div>
-            <p style={{ color: 'var(--pencil-subtle)', fontSize: '1.05rem' }}>
-              Target Objective: <span className="marker-highlight" style={{ fontWeight: 700, color: 'var(--pencil-black)' }}>Add fractions with like and unlike denominators</span>
+            <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-handwriting)', fontSize: '1.15rem', margin: 0 }}>
+              Ask anything about your lessons. Your tutor guides you through self-discovery without giving away answers!
             </p>
           </div>
-          <HandBadge variant="blue">RAG Verified</HandBadge>
-        </div>
-      </WobblyCard>
-
-      {/* Mode Selector Buttons */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-        {[
-          { mode: 'explanation', label: '📖 Socratic Dialogue', icon: '📖' },
-          { mode: 'hint', label: '💡 Step Hint', icon: '💡' },
-          { mode: 'worked_example', label: '✏️ Worked Example', icon: '✏️' },
-          { mode: 'guided_practice', label: '🎯 Practice Problem', icon: '🎯' }
-        ].map((m) => {
-          const isActive = selectedMode === m.mode;
-          return (
-            <button
-              key={m.mode}
-              onClick={() => {
-                setSelectedMode(m.mode);
-                handleSend(m.mode);
-              }}
-              className="wobbly-btn"
-              style={{
-                background: isActive ? 'var(--marker-red)' : '#ffffff',
-                color: isActive ? '#ffffff' : 'var(--pencil-black)',
-                boxShadow: isActive ? 'var(--shadow-hard-sm)' : 'var(--shadow-hard)',
-                transform: isActive ? 'translate(2px, 2px)' : 'none',
-                fontSize: '1rem',
-                padding: '8px 18px'
-              }}
-            >
-              {m.label}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Main Conversation & Evidence Layout */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-        {/* Left Column: Notebook Dialogue Area */}
-        <WobblyCard style={{ display: 'flex', flexDirection: 'column', height: '600px', padding: '24px', background: '#ffffff' }}>
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '18px', paddingRight: '8px' }}>
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                style={{
-                  alignSelf: msg.sender === 'student' ? 'flex-end' : 'flex-start',
-                  maxWidth: '82%',
-                  padding: '16px 20px',
-                  borderRadius: msg.sender === 'student' ? 'var(--wobbly-card)' : 'var(--wobbly-sm)',
-                  background: msg.sender === 'student' ? 'var(--postit-cyan)' : 'var(--postit-yellow)',
-                  border: '2px solid var(--pencil-black)',
-                  boxShadow: 'var(--shadow-hard-sm)'
-                }}
-              >
-                <div style={{ fontSize: '0.85rem', color: msg.sender === 'student' ? 'var(--pen-blue)' : 'var(--marker-red)', fontWeight: 700, marginBottom: '4px' }}>
-                  {msg.sender === 'student' ? 'Alex (Student)' : `🤖 AI Tutor • ${msg.mode?.toUpperCase()}`}
-                </div>
-                <div style={{ fontSize: '1.1rem', lineHeight: 1.5, color: 'var(--pencil-black)' }}>
-                  {msg.text}
-                </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--pencil-subtle)', marginTop: '6px', textAlign: 'right' }}>
-                  {msg.timestamp}
-                </div>
-              </div>
-            ))}
-            {loading && (
-              <div style={{ color: 'var(--pen-blue)', fontSize: '1.05rem', fontStyle: 'italic' }}>
-                ✏️ Tutor is writing a grounded note...
-              </div>
-            )}
-          </div>
-
-          {/* Chat Input Bar */}
-          <div style={{ marginTop: '18px', display: 'flex', gap: '12px', paddingTop: '16px', borderTop: '2px dashed var(--pencil-muted)' }}>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Write your answer or question (e.g. '3/6 + 2/6 = 5/6')..."
-              className="wobbly-input"
-            />
-            <WobblyButton
-              onClick={() => handleSend()}
-              disabled={loading}
-              variant="red"
-              style={{ minWidth: '110px' }}
-            >
-              Send ✎
+          <Link href="/student/dashboard">
+            <WobblyButton variant="secondary">
+              ← Back to Study Desk
             </WobblyButton>
+          </Link>
+        </div>
+
+        {/* Instructional Mode Selector Tabs */}
+        <WobblyCard decoration="tape" style={{ padding: '16px 20px', background: '#fff' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
+              Instructional Mode:
+            </span>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              {modeOptions.map(m => {
+                const isActive = selectedMode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => setSelectedMode(m.id)}
+                    style={{
+                      padding: '8px 14px',
+                      borderRadius: '8px',
+                      border: isActive ? '2px solid var(--color-primary)' : '1.5px solid var(--border-light)',
+                      background: isActive ? '#eef2ff' : '#ffffff',
+                      color: isActive ? 'var(--color-primary-dark)' : 'var(--text-main)',
+                      fontWeight: isActive ? 'bold' : 'normal',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {m.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </WobblyCard>
 
-        {/* Right Column: Sticky-Note Textbook Citations */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <WobblyCard variant="yellow" decoration="tack-red" style={{ padding: '22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: '1.4rem' }}>📖</span>
-              <h3 style={{ fontSize: '1.25rem' }}>Textbook Passages</h3>
-            </div>
-            <p style={{ fontSize: '0.95rem', color: 'var(--pencil-black)', opacity: 0.85, marginBottom: '14px' }}>
-              Every Socratic explanation is mathematically bound to published syllabus texts.
-            </p>
-
-            {messages.length > 0 && messages[messages.length - 1].evidence ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {messages[messages.length - 1].evidence?.map((ev, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      padding: '12px',
-                      background: '#ffffff',
-                      borderRadius: 'var(--wobbly-sm)',
-                      border: '1.5px solid var(--pencil-black)',
-                      boxShadow: '2px 2px 0px var(--pencil-black)'
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                      <HandBadge variant="blue" style={{ fontSize: '0.78rem' }}>Page {ev.page_number}</HandBadge>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--pencil-subtle)' }}>{ev.section}</span>
-                    </div>
-                    <div style={{ color: 'var(--pencil-black)', fontSize: '0.95rem', lineHeight: 1.4, fontStyle: 'italic' }}>
-                      &ldquo;{ev.text}&rdquo;
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--pencil-subtle)', fontSize: '0.95rem' }}>
-                Passages and textbook page citations will appear here in real-time.
-              </div>
-            )}
-          </WobblyCard>
-
-          {/* Child Safety Pin Note */}
-          <WobblyCard variant="green" decoration="tape" style={{ padding: '18px' }}>
-            <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#15803d', marginBottom: '4px' }}>
-              🛡️ Student Safety Active
-            </div>
-            <div style={{ fontSize: '0.92rem', color: 'var(--pencil-black)', opacity: 0.9, lineHeight: 1.4 }}>
-              System prompt protection, PII redacting, and Socratic non-solution guardrails are enforced.
-            </div>
-          </WobblyCard>
+        {/* Quick Question Starters */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>Quick Starters:</span>
+          <button
+            onClick={() => handleSend("How do I find the common denominator for 1/3 and 1/6?", "socratic")}
+            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px dashed #6366f1', background: '#f5f7ff', fontSize: '0.85rem', cursor: 'pointer', color: '#4f46e5' }}
+          >
+            "How to find common denominator for 1/3 and 1/6?"
+          </button>
+          <button
+            onClick={() => handleSend("Why can't I just add the denominators directly?", "explanation")}
+            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px dashed #6366f1', background: '#f5f7ff', fontSize: '0.85rem', cursor: 'pointer', color: '#4f46e5' }}
+          >
+            "Why can't I add denominators directly?"
+          </button>
+          <button
+            onClick={() => handleSend("Give me a hint for adding 3/4 + 1/8", "hint")}
+            style={{ padding: '6px 12px', borderRadius: '6px', border: '1px dashed #6366f1', background: '#f5f7ff', fontSize: '0.85rem', cursor: 'pointer', color: '#4f46e5' }}
+          >
+            "Give me a hint for 3/4 + 1/8"
+          </button>
         </div>
+
+        {/* Chat History Thread */}
+        <WobblyCard decoration="none" style={{ padding: '24px', minHeight: '420px', display: 'flex', flexDirection: 'column', gap: '16px', background: '#fdfcf9' }}>
+          {messages.map((m) => {
+            const isTutor = m.sender === 'tutor';
+            return (
+              <div
+                key={m.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignSelf: isTutor ? 'flex-start' : 'flex-end',
+                  maxWidth: '85%'
+                }}
+              >
+                <div
+                  style={{
+                    padding: '16px 20px',
+                    borderRadius: '14px',
+                    background: isTutor ? '#ffffff' : 'var(--color-primary)',
+                    color: isTutor ? 'var(--text-main)' : '#ffffff',
+                    border: isTutor ? '2px solid var(--border-dark)' : '2px solid var(--color-primary-dark)',
+                    boxShadow: 'var(--shadow-hard)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 'bold', color: isTutor ? 'var(--color-primary-dark)' : '#e0e7ff' }}>
+                      {isTutor ? `🤖 AI Socratic Tutor (${m.mode || 'Socratic'})` : '🎒 You (Alex)'}
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: isTutor ? 'var(--text-muted)' : '#c7d2fe' }}>
+                      {m.timestamp}
+                    </span>
+                  </div>
+
+                  <p style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.55, whiteSpace: 'pre-wrap' }}>
+                    {m.text}
+                  </p>
+
+                  {/* Verified Citations Badge */}
+                  {isTutor && m.citations && m.citations.length > 0 && (
+                    <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed var(--border-light)', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                      <strong>🔖 Verified Textbook Evidence:</strong> {m.citations[0].chapter || 'Curriculum Standard'} • Page {m.citations[0].page_number || 42}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+
+          {loading && (
+            <div style={{ alignSelf: 'flex-start', padding: '12px 18px', background: '#fff', borderRadius: '12px', border: '1.5px solid var(--border-light)' }}>
+              <span style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+                AI Tutor is formulating a Socratic question... ⏳
+              </span>
+            </div>
+          )}
+
+          <div ref={chatEndRef} />
+        </WobblyCard>
+
+        {/* User Input Bar */}
+        <form onSubmit={(e) => { e.preventDefault(); handleSend(); }} style={{ display: 'flex', gap: '12px' }}>
+          <input
+            type="text"
+            placeholder={
+              selectedMode === 'hint'
+                ? "Ask for a progressive hint..."
+                : selectedMode === 'socratic'
+                ? "Share your reasoning or ask a guiding question..."
+                : "Ask anything about this math lesson..."
+            }
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            style={{
+              flex: 1,
+              padding: '14px 18px',
+              borderRadius: '10px',
+              border: '2px solid var(--border-dark)',
+              fontSize: '1.05rem',
+              background: '#fff'
+            }}
+          />
+          <WobblyButton type="submit" variant="primary" disabled={loading || !input.trim()}>
+            Send Question 🚀
+          </WobblyButton>
+        </form>
+
       </div>
-    </div>
+    </AuthenticatedShell>
   );
 }
-

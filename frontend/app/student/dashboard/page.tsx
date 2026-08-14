@@ -110,14 +110,19 @@ export default function StudentDashboardPage() {
               </p>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Link href="/student/assessments" style={{ textDecoration: 'none' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <Link href="/student/lesson" style={{ textDecoration: 'none' }}>
                 <WobblyButton variant="red" style={{ fontSize: '1.05rem', padding: '10px 20px' }}>
-                  Resume Practice →
+                  Launch Lesson 📖
+                </WobblyButton>
+              </Link>
+              <Link href="/student/assessments" style={{ textDecoration: 'none' }}>
+                <WobblyButton variant="secondary" style={{ fontSize: '1.05rem', padding: '10px 16px' }}>
+                  Practice Quiz ✏️
                 </WobblyButton>
               </Link>
               <Link href="/student/adaptive" style={{ color: 'var(--pen-blue)', fontSize: '0.95rem', fontWeight: 700, textDecoration: 'none' }}>
-                View Learning Path
+                View Learning Path →
               </Link>
             </div>
           </WobblyCard>
@@ -154,9 +159,9 @@ export default function StudentDashboardPage() {
             <h2 style={{ fontSize: '1.5rem' }}>
               📚 My Enrolled Subjects
             </h2>
-            <span style={{ fontSize: '0.9rem', color: 'var(--pencil-subtle)', fontWeight: 700 }}>
-              Curriculum Version: Grade 6 Standards (Published)
-            </span>
+            <Link href="/student/subjects" style={{ fontSize: '0.95rem', color: 'var(--pen-blue)', fontWeight: 700, textDecoration: 'none' }}>
+              Browse All Units &amp; Topics →
+            </Link>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '18px' }}>
@@ -166,20 +171,22 @@ export default function StudentDashboardPage() {
               { name: 'Language Arts', topic: 'Context Clues & Inferences', color: 'purple' as const, icon: '📖', progress: 'Strong 🌟' },
               { name: 'Computer Science', topic: 'Loops & Conditional Logic', color: 'orange' as const, icon: '💻', progress: 'Getting there 💡' }
             ].map((sub, idx) => (
-              <WobblyCard key={idx} variant={sub.color} style={{ padding: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '1.8rem' }}>{sub.icon}</span>
-                  <HandBadge variant={sub.progress.includes('Strong') ? 'green' : sub.progress.includes('On track') ? 'blue' : 'yellow'} style={{ fontSize: '0.8rem' }}>
-                    {sub.progress}
-                  </HandBadge>
-                </div>
-                <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 700, color: 'var(--pencil-black)' }}>
-                  {sub.name}
-                </div>
-                <div style={{ fontSize: '0.88rem', color: 'var(--pencil-subtle)', marginTop: '4px' }}>
-                  {sub.topic}
-                </div>
-              </WobblyCard>
+              <Link key={idx} href="/student/subjects" style={{ textDecoration: 'none' }}>
+                <WobblyCard variant={sub.color} style={{ padding: '20px', cursor: 'pointer', height: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '1.8rem' }}>{sub.icon}</span>
+                    <HandBadge variant={sub.progress.includes('Strong') ? 'green' : sub.progress.includes('On track') ? 'blue' : 'yellow'} style={{ fontSize: '0.8rem' }}>
+                      {sub.progress}
+                    </HandBadge>
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 700, color: 'var(--pencil-black)' }}>
+                    {sub.name}
+                  </div>
+                  <div style={{ fontSize: '0.88rem', color: 'var(--pencil-subtle)', marginTop: '4px' }}>
+                    {sub.topic}
+                  </div>
+                </WobblyCard>
+              </Link>
             ))}
           </div>
         </div>
