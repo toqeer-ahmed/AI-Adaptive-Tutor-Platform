@@ -196,6 +196,145 @@ class UserService:
                 session.add(link)
                 await session.commit()
 
+        # 7. Seed Curriculum, Concept, Question Bank Items, and Assessment
+        from backend.models.curriculum import Curriculum, CurriculumVersion, Chapter, Topic, Concept
+        from backend.models.assessment import QuestionBankItem, Assessment, AssessmentQuestion
+
+        curriculum_res = await session.execute(
+            select(Curriculum).where(
+                Curriculum.organization_id == org.id,
+                Curriculum.name == "Grade 6 Mathematics Core Curriculum"
+            )
+        )
+        curriculum = curriculum_res.scalars().first()
+        if not curriculum and teacher_user:
+            curriculum = Curriculum(
+                id=uuid.uuid4(),
+                organization_id=org.id,
+                created_by_id=teacher_user.id,
+                name="Grade 6 Mathematics Core Curriculum",
+                grade_level=6,
+                subject_name="Mathematics",
+                description="Authoritative Grade 6 Common Core Aligned Mathematics Curriculum."
+            )
+            session.add(curriculum)
+            await session.flush()
+
+            org_admin_user = created_users.get("OrgAdmin", teacher_user)
+            version = CurriculumVersion(
+                id=uuid.uuid4(),
+                curriculum_id=curriculum.id,
+                version_number=1,
+                status="PUBLISHED",
+                created_by_id=teacher_user.id,
+                approved_by_id=org_admin_user.id,
+                published_by_id=org_admin_user.id,
+                change_log="Published baseline curriculum for Grade 6 Mathematics."
+            )
+            session.add(version)
+            await session.flush()
+
+            chapter = Chapter(
+                id=uuid.uuid4(),
+                curriculum_version_id=version.id,
+                name="Chapter 1: Number Sense & Fractions",
+                sequence_order=1
+            )
+            session.add(chapter)
+            await session.flush()
+
+            topic = Topic(
+                id=uuid.uuid4(),
+                chapter_id=chapter.id,
+                name="Topic 1.1: Fraction Addition and Subtraction",
+                sequence_order=1
+            )
+            session.add(topic)
+            await session.flush()
+
+            concept = Concept(
+                id=uuid.uuid4(),
+                topic_id=topic.id,
+                name="Adding Unlike Fractions with Common Denominators",
+                description="Compute sums of fractions with different denominators using LCM.",
+                difficulty_level=3,
+                sequence_order=1
+            )
+            session.add(concept)
+            await session.flush()
+
+            # Seed approved Question Bank items
+            q1 = QuestionBankItem(
+                id=uuid.uuid4(),
+                organization_id=org.id,
+                curriculum_version_id=version.id,
+                concept_id=concept.id,
+                difficulty=2,
+                question_type="mcq",
+                question_text="What is 1/4 + 2/4 in simplest form?",
+                options_json=["3/8", "3/4", "1/2", "2/8"],
+                correct_answer_json="3/4",
+                explanation="When denominators are identical, add the numerators: 1 + 2 = 3. Keep the denominator 4.",
+                generation_method="MANUAL",
+                validation_status="APPROVED",
+                created_by_id=teacher_user.id
+            )
+            q2 = QuestionBankItem(
+                id=uuid.uuid4(),
+                organization_id=org.id,
+                curriculum_version_id=version.id,
+                concept_id=concept.id,
+                difficulty=3,
+                question_type="mcq",
+                question_text="Calculate 1/3 + 1/6. What is the sum in simplest form?",
+                options_json=["2/9", "3/6", "1/2", "2/6"],
+                correct_answer_json="1/2",
+                explanation="The LCM of 3 and 6 is 6. 1/3 = 2/6. Then 2/6 + 1/6 = 3/6 = 1/2.",
+                generation_method="MANUAL",
+                validation_status="APPROVED",
+                created_by_id=teacher_user.id
+            )
+            q3 = QuestionBankItem(
+                id=uuid.uuid4(),
+                organization_id=org.id,
+                curriculum_version_id=version.id,
+                concept_id=concept.id,
+                difficulty=4,
+                question_type="numeric",
+                question_text="Evaluate 2/5 + 1/10. Enter the exact simplified fraction (e.g. 1/2).",
+                options_json=None,
+                correct_answer_json="1/2",
+                explanation="2/5 = 4/10. 4/10 + 1/10 = 5/10 = 1/2.",
+                generation_method="MANUAL",
+                validation_status="APPROVED",
+                created_by_id=teacher_user.id
+            )
+            session.add_all([q1, q2, q3])
+            await session.flush()
+
+            # Seed published Assessment
+            ass = Assessment(
+                id=uuid.uuid4(),
+                organization_id=org.id,
+                school_id=school.id,
+                class_id=cls.id if cls else None,
+                created_by_id=teacher_user.id,
+                title="Grade 6 Mathematics Mastery Quiz 1: Fraction Operations",
+                description="Deterministic mastery check covering addition of unlike fractions with common denominators.",
+                assessment_type="QUIZ",
+                max_attempts=3,
+                is_published=True
+            )
+            session.add(ass)
+            await session.flush()
+
+            aq1 = AssessmentQuestion(id=uuid.uuid4(), assessment_id=ass.id, question_id=q1.id, sequence_order=1, points=1.0)
+            aq2 = AssessmentQuestion(id=uuid.uuid4(), assessment_id=ass.id, question_id=q2.id, sequence_order=2, points=1.0)
+            aq3 = AssessmentQuestion(id=uuid.uuid4(), assessment_id=ass.id, question_id=q3.id, sequence_order=3, points=1.0)
+            session.add_all([aq1, aq2, aq3])
+            await session.commit()
+
+
 
 
 class ClassService:

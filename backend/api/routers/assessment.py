@@ -9,7 +9,8 @@ from sqlalchemy.orm import selectinload
 from backend.api.deps import get_db, get_current_user, require_roles
 from backend.services.assessment_service.question_generator import QuestionGenerationEngine
 from backend.services.assessment_service.service import AssessmentService
-from backend.models.assessment import QuestionBankItem, Assessment, AssessmentAttempt, StudentAnswer
+from backend.models.assessment import QuestionBankItem, Assessment, AssessmentQuestion, AssessmentAttempt, StudentAnswer
+
 from backend.models.user import User
 
 router = APIRouter(tags=["Assessments"])
