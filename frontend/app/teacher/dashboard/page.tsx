@@ -3,6 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
+import {
+  WobblyCard,
+  WobblyButton,
+  HandBadge
+} from '@/lib/HandDrawnComponents';
 
 interface ClassAnalyticsData {
   class_id: string;
@@ -39,65 +44,63 @@ export default function TeacherDashboardPage() {
   }
 
   return (
-    <div style={{ padding: '32px 24px 60px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '32px 24px 60px', maxWidth: '1150px', margin: '0 auto' }}>
       {/* Top Header */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <Link href="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>←</span> Back to Portals
+        <Link href="/" style={{ color: 'var(--pen-blue)', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>←</span> Back to Study Desk
         </Link>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <span className="badge badge-purple">Teacher Command Studio</span>
-          <span className="badge badge-cyan">Section 6-A</span>
+          <HandBadge variant="purple">Teacher Command Studio</HandBadge>
+          <HandBadge variant="blue">Section 6-A</HandBadge>
         </div>
       </div>
 
-      <header className="glass-panel" style={{ padding: '28px', marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+      {/* Header Gradebook Card */}
+      <WobblyCard decoration="tape" style={{ padding: '26px 30px', marginBottom: '28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '1.6rem' }}>🍎</span>
-            <h1 style={{ fontSize: '1.9rem', color: '#f8fafc' }}>
-              Teacher Command Dashboard
+            <span style={{ fontSize: '1.8rem' }}>🍎</span>
+            <h1 style={{ fontSize: '2.1rem' }}>
+              Teacher Gradebook & Analytics
             </h1>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+          <p style={{ color: 'var(--pencil-subtle)', fontSize: '1.05rem' }}>
             Grade 6 Mathematics • Real-time Concept Mastery Heatmaps, Misconception Diagnosis, & Question Authoring
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <Link href="/teacher/assessments" className="btn-primary" style={{ padding: '10px 18px', fontSize: '0.88rem' }}>
-            ✨ Question Generator
-          </Link>
-          <Link href="/teacher/grading" className="btn-secondary" style={{ padding: '10px 18px', fontSize: '0.88rem' }}>
-            ✏️ Grade Review
-          </Link>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+          <WobblyButton href="/teacher/assessments" variant="red">
+            ✨ Question Bank
+          </WobblyButton>
+          <WobblyButton href="/teacher/curriculum/review" variant="blue">
+            📖 Syllabus Inspector
+          </WobblyButton>
         </div>
-      </header>
+      </WobblyCard>
 
       {/* Navigation Tabs */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '28px', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '14px', overflowX: 'auto' }}>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '28px', overflowX: 'auto', paddingBottom: '8px' }}>
         {[
-          { key: 'analytics', label: '📊 Class Mastery Heatmap', icon: '📊' },
-          { key: 'curriculum', label: '📖 Curriculum Studio', icon: '📖' },
-          { key: 'assessments', label: '📝 Question Bank & Quizzes', icon: '📝' },
-          { key: 'grading', label: '✏️ Grade Review & Overrides', icon: '✏️' }
+          { key: 'analytics', label: '📊 Class Mastery Heatmap' },
+          { key: 'curriculum', label: '📖 Curriculum Studio' },
+          { key: 'assessments', label: '📝 Question Bank & Quizzes' },
+          { key: 'grading', label: '✏️ Grade Review & Overrides' }
         ].map((tab) => {
           const isActive = activeTab === tab.key;
           return (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
+              className="wobbly-btn"
               style={{
-                padding: '10px 20px',
-                background: isActive ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : 'rgba(15, 23, 42, 0.6)',
-                color: '#ffffff',
-                border: `1px solid ${isActive ? 'rgba(129, 140, 248, 0.5)' : 'var(--border-subtle)'}`,
-                borderRadius: 'var(--radius-sm)',
-                fontWeight: 600,
-                fontSize: '0.9rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                whiteSpace: 'nowrap'
+                background: isActive ? 'var(--marker-red)' : '#ffffff',
+                color: isActive ? '#ffffff' : 'var(--pencil-black)',
+                boxShadow: isActive ? 'var(--shadow-hard-sm)' : 'var(--shadow-hard)',
+                transform: isActive ? 'translate(2px, 2px)' : 'none',
+                fontSize: '1rem',
+                padding: '8px 18px'
               }}
             >
               {tab.label}
@@ -106,174 +109,192 @@ export default function TeacherDashboardPage() {
         })}
       </div>
 
-      {/* TAB 1: ANALYTICS & HEATMAP */}
+      {/* TAB 1: ANALYTICS */}
       {activeTab === 'analytics' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-          {/* 4 Summary Stat Cards */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '18px' }}>
-            <div className="glass-panel" style={{ padding: '22px', borderLeft: '4px solid #38bdf8' }}>
-              <div style={{ fontSize: '0.82rem', color: '#38bdf8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Class Average Mastery
+        <div>
+          {/* 4 Summary Stat Post-it Notes */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '36px' }}>
+            <WobblyCard variant="cyan" decoration="tack-blue" tilt="left-sm" style={{ padding: '20px' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--pen-blue)', fontWeight: 700, textTransform: 'uppercase' }}>Enrolled Learners</div>
+              <div style={{ fontSize: '2.8rem', fontWeight: 700, fontFamily: 'var(--font-heading)', margin: '4px 0', color: 'var(--pencil-black)' }}>
+                {analytics?.student_count || 28}
               </div>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#f8fafc', margin: '6px 0 2px' }}>
-                {analytics ? `${Math.round(analytics.class_average_mastery * 100)}%` : '78%'}
-              </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-subtle)' }}>
-                Target: &ge; 75% cohort benchmark
-              </div>
-            </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--pencil-subtle)' }}>Active section roster</div>
+            </WobblyCard>
 
-            <div className="glass-panel" style={{ padding: '22px', borderLeft: '4px solid #10b981' }}>
-              <div style={{ fontSize: '0.82rem', color: '#34d399', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Quiz Completion Rate
+            <WobblyCard variant="green" decoration="tape" tilt="none" style={{ padding: '20px' }}>
+              <div style={{ fontSize: '0.9rem', color: '#15803d', fontWeight: 700, textTransform: 'uppercase' }}>Class Avg Mastery</div>
+              <div style={{ fontSize: '2.8rem', fontWeight: 700, fontFamily: 'var(--font-heading)', margin: '4px 0', color: 'var(--pencil-black)' }}>
+                {Math.round((analytics?.class_average_mastery || 0.74) * 100)}%
               </div>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#f8fafc', margin: '6px 0 2px' }}>
-                {analytics ? `${Math.round(analytics.completion_rate * 100)}%` : '92%'}
-              </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-subtle)' }}>
-                24 of 26 active students
-              </div>
-            </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--pencil-subtle)' }}>+6.2% EWMA weekly growth</div>
+            </WobblyCard>
 
-            <div className="glass-panel" style={{ padding: '22px', borderLeft: '4px solid #f43f5e' }}>
-              <div style={{ fontSize: '0.82rem', color: '#f43f5e', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Target Remediation
+            <WobblyCard variant="orange" decoration="tack-red" tilt="right-sm" style={{ padding: '20px' }}>
+              <div style={{ fontSize: '0.9rem', color: '#c2410c', fontWeight: 700, textTransform: 'uppercase' }}>Need Remediation</div>
+              <div style={{ fontSize: '2.8rem', fontWeight: 700, fontFamily: 'var(--font-heading)', margin: '4px 0', color: 'var(--pencil-black)' }}>
+                {analytics?.students_needing_remediation.length || 4}
               </div>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#f8fafc', margin: '6px 0 2px' }}>
-                {analytics ? analytics.students_needing_remediation.length : 2}
-              </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-subtle)' }}>
-                Mastery score &lt; 40% threshold
-              </div>
-            </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--pencil-subtle)' }}>Prerequisite support flagged</div>
+            </WobblyCard>
 
-            <div className="glass-panel" style={{ padding: '22px', borderLeft: '4px solid #c084fc' }}>
-              <div style={{ fontSize: '0.82rem', color: '#c084fc', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Ready for Challenge
+            <WobblyCard variant="purple" decoration="tape" tilt="left-sm" style={{ padding: '20px' }}>
+              <div style={{ fontSize: '0.9rem', color: '#7e22ce', fontWeight: 700, textTransform: 'uppercase' }}>Quiz Completion</div>
+              <div style={{ fontSize: '2.8rem', fontWeight: 700, fontFamily: 'var(--font-heading)', margin: '4px 0', color: 'var(--pencil-black)' }}>
+                {Math.round((analytics?.completion_rate || 0.92) * 100)}%
               </div>
-              <div style={{ fontSize: '2.4rem', fontWeight: 800, color: '#f8fafc', margin: '6px 0 2px' }}>
-                {analytics ? analytics.students_ready_for_challenge.length : 4}
-              </div>
-              <div style={{ fontSize: '0.78rem', color: 'var(--text-subtle)' }}>
-                Mastery score &ge; 85% with high stability
-              </div>
-            </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--pencil-subtle)' }}>Assigned homework pace</div>
+            </WobblyCard>
           </div>
 
-          {/* Heatmap & Misconception Columns */}
+          {/* Heatmaps & Misconceptions */}
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
             {/* Concept Heatmap */}
-            <section className="glass-panel" style={{ padding: '24px' }}>
+            <WobblyCard style={{ padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '1.25rem', color: '#38bdf8' }}>🔥 Concept Mastery Heatmap</h2>
-                <span className="badge badge-cyan">4 Target Concepts</span>
+                <h2 style={{ fontSize: '1.35rem' }}>🔥 Concept Mastery Distribution</h2>
+                <HandBadge variant="yellow">Grade 6 Mathematics</HandBadge>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {[
-                  { name: 'Adding Fractions (Unlike Denominators)', score: 0.68, band: 'On track' },
-                  { name: 'Common Denominator Identification', score: 0.88, band: 'Strong' },
-                  { name: 'Simplifying Fractions', score: 0.35, band: 'Needs Remediation' },
-                  { name: 'Mixed Numbers Addition', score: 0.72, band: 'On track' }
-                ].map((item, idx) => (
+                  { name: 'Adding Fractions with Common Denominators', score: 0.88, count: 28, status: 'Mastered' },
+                  { name: 'Finding Least Common Multiples (LCM)', score: 0.72, count: 26, status: 'On Track' },
+                  { name: 'Unlike Denominators & Equivalent Fractions', score: 0.58, count: 24, status: 'Needs Practice' },
+                  { name: 'Simplifying Improper Mixed Numbers', score: 0.38, count: 18, status: 'Remediation Alert' }
+                ].map((c, idx) => (
                   <div
                     key={idx}
                     style={{
-                      padding: '16px',
-                      background: 'rgba(15, 23, 42, 0.7)',
-                      borderRadius: 'var(--radius-sm)',
-                      border: '1px solid var(--border-subtle)',
-                      borderLeft: `4px solid ${item.score < 0.4 ? '#f43f5e' : item.score >= 0.75 ? '#10b981' : '#f59e0b'}`
+                      padding: '16px 18px',
+                      background: '#ffffff',
+                      borderRadius: 'var(--wobbly-sm)',
+                      border: '2px solid var(--pencil-black)',
+                      boxShadow: 'var(--shadow-hard-sm)'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 600, color: '#f8fafc', fontSize: '0.95rem' }}>{item.name}</span>
-                      <span style={{ fontWeight: 700, fontSize: '0.9rem', color: item.score < 0.4 ? '#f87171' : item.score >= 0.75 ? '#34d399' : '#fbbf24' }}>
-                        {Math.round(item.score * 100)}% Average
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--pencil-black)' }}>{c.name}</div>
+                      <span style={{ fontWeight: 700, color: c.score >= 0.75 ? '#15803d' : c.score >= 0.5 ? 'var(--pen-blue)' : 'var(--marker-red)' }}>
+                        {Math.round(c.score * 100)}%
                       </span>
                     </div>
 
-                    <div style={{ width: '100%', height: '8px', backgroundColor: 'rgba(255, 255, 255, 0.08)', borderRadius: '9999px', overflow: 'hidden' }}>
+                    <div style={{ height: '10px', background: 'var(--pencil-muted)', borderRadius: 'var(--wobbly-sm)', border: '1.5px solid var(--pencil-black)', overflow: 'hidden' }}>
                       <div
                         style={{
-                          width: `${item.score * 100}%`,
+                          width: `${c.score * 100}%`,
                           height: '100%',
-                          background: item.score < 0.4 ? 'linear-gradient(90deg, #f59e0b, #f43f5e)' : item.score >= 0.75 ? 'linear-gradient(90deg, #10b981, #34d399)' : 'linear-gradient(90deg, #38bdf8, #818cf8)',
-                          borderRadius: '9999px'
+                          backgroundColor: c.score >= 0.75 ? '#15803d' : c.score >= 0.5 ? 'var(--pen-blue)' : 'var(--marker-red)'
                         }}
                       />
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: 'var(--pencil-subtle)', marginTop: '8px' }}>
+                      <span>{c.count} students assessed</span>
+                      <span style={{ fontWeight: 700, color: 'var(--pencil-black)' }}>{c.status}</span>
                     </div>
                   </div>
                 ))}
               </div>
-            </section>
+            </WobblyCard>
 
-            {/* Misconception Diagnosis */}
-            <section className="glass-panel" style={{ padding: '24px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h2 style={{ fontSize: '1.25rem', color: '#fbbf24' }}>💡 Detected Misconceptions</h2>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.7)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid #f43f5e', border: '1px solid var(--border-subtle)', borderLeftColor: '#f43f5e' }}>
-                  <div style={{ fontSize: '0.72rem', color: '#f43f5e', fontWeight: 700, letterSpacing: '0.04em' }}>CODE: ADD_DENOMINATORS_DIRECTLY</div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc', margin: '4px 0' }}>Adds Denominators Directly</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Found in 3 student submissions (e.g. 1/3 + 1/3 = 2/6)</div>
+            {/* Diagnosed Misconception Alerts */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <WobblyCard variant="yellow" decoration="tack-red" style={{ padding: '22px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '1.4rem' }}>⚠️</span>
+                  <h3 style={{ fontSize: '1.25rem' }}>Top Misconceptions</h3>
                 </div>
+                <p style={{ fontSize: '0.92rem', color: 'var(--pencil-black)', opacity: 0.85, marginBottom: '16px' }}>
+                  Identified by deterministic rule engine from student error step patterns:
+                </p>
 
-                <div style={{ padding: '16px', background: 'rgba(15, 23, 42, 0.7)', borderRadius: 'var(--radius-sm)', borderLeft: '3px solid #fbbf24', border: '1px solid var(--border-subtle)', borderLeftColor: '#fbbf24' }}>
-                  <div style={{ fontSize: '0.72rem', color: '#fbbf24', fontWeight: 700, letterSpacing: '0.04em' }}>CODE: IGNORES_UNLIKE_DENOMINATORS</div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 700, color: '#f8fafc', margin: '4px 0' }}>Ignores Unlike Denominators</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Found in 1 student submission (e.g. 1/2 + 1/4 = 2/4)</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {[
+                    { code: 'ADD_DENOMINATORS', title: 'Adding denominators directly (1/3 + 1/3 = 2/6)', count: 9 },
+                    { code: 'CROSS_MULT_CONFUSION', title: 'Cross-multiplying instead of finding LCM', count: 6 },
+                    { code: 'IMPROPER_CONVERSION', title: 'Dropping remainder in mixed fractions', count: 4 }
+                  ].map((m, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        padding: '14px',
+                        background: '#ffffff',
+                        borderRadius: 'var(--wobbly-sm)',
+                        border: '1.5px solid var(--pencil-black)',
+                        borderLeft: '4px solid var(--marker-red)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--marker-red)' }}>{m.code}</span>
+                        <HandBadge variant="red" style={{ fontSize: '0.75rem' }}>{m.count} students</HandBadge>
+                      </div>
+                      <div style={{ fontSize: '0.95rem', color: 'var(--pencil-black)', lineHeight: 1.4 }}>
+                        {m.title}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </section>
+              </WobblyCard>
+
+              {/* Targeted Remediation Post-it */}
+              <WobblyCard variant="cyan" decoration="tape" style={{ padding: '20px' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--pen-blue)', marginBottom: '6px' }}>
+                  💡 Targeted Remediation
+                </div>
+                <p style={{ fontSize: '0.92rem', color: 'var(--pencil-black)', opacity: 0.9, lineHeight: 1.4, marginBottom: '14px' }}>
+                  4 students would benefit from a 10-minute small group Socratic session on least common denominators.
+                </p>
+                <WobblyButton href="/teacher/assessments" variant="blue" style={{ fontSize: '0.95rem', padding: '8px 16px' }}>
+                  Generate Diagnostic Quiz →
+                </WobblyButton>
+              </WobblyCard>
+            </div>
           </div>
         </div>
       )}
 
       {/* TAB 2: CURRICULUM */}
       {activeTab === 'curriculum' && (
-        <section className="glass-panel" style={{ padding: '32px' }}>
-          <h2 style={{ fontSize: '1.4rem', color: '#38bdf8', marginBottom: '12px' }}>📖 Curriculum Document Management</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.5, maxWidth: '700px' }}>
+        <WobblyCard decoration="tape" style={{ padding: '32px' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>📖 Curriculum Document Management</h2>
+          <p style={{ color: 'var(--pencil-subtle)', marginBottom: '24px', lineHeight: 1.5, maxWidth: '700px' }}>
             Upload syllabus documents, extract structured AI drafts, review, edit, approve, and publish versioned curriculum with strict immutable version control.
           </p>
-
-          <Link href="/teacher/curriculum/review" className="btn-primary">
+          <WobblyButton href="/teacher/curriculum/review" variant="blue">
             📄 Open AI Curriculum Review Inspector →
-          </Link>
-        </section>
+          </WobblyButton>
+        </WobblyCard>
       )}
 
       {/* TAB 3: ASSESSMENTS */}
       {activeTab === 'assessments' && (
-        <section className="glass-panel" style={{ padding: '32px' }}>
-          <h2 style={{ fontSize: '1.4rem', color: '#c084fc', marginBottom: '12px' }}>📝 Question Bank & Quiz Builder</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.5, maxWidth: '700px' }}>
-            Generate AI questions with deterministic math verification, edit rubrics, and publish quizzes.
+        <WobblyCard decoration="tack-yellow" style={{ padding: '32px' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>📝 Question Bank & Quiz Builder</h2>
+          <p style={{ color: 'var(--pencil-subtle)', marginBottom: '24px', lineHeight: 1.5, maxWidth: '700px' }}>
+            Generate AI questions with deterministic math verification, edit rubrics, and publish quizzes with human oversight.
           </p>
-
-          <Link href="/teacher/assessments" className="btn-primary">
+          <WobblyButton href="/teacher/assessments" variant="red">
             ✨ Open Question Generator Workspace →
-          </Link>
-        </section>
+          </WobblyButton>
+        </WobblyCard>
       )}
 
       {/* TAB 4: GRADING */}
       {activeTab === 'grading' && (
-        <section className="glass-panel" style={{ padding: '32px' }}>
-          <h2 style={{ fontSize: '1.4rem', color: '#fbbf24', marginBottom: '12px' }}>✏️ Subjective Grade Review Workspace</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '24px', lineHeight: 1.5, maxWidth: '700px' }}>
+        <WobblyCard decoration="tape" style={{ padding: '32px' }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '12px' }}>✏️ Subjective Grade Review Workspace</h2>
+          <p style={{ color: 'var(--pencil-subtle)', marginBottom: '24px', lineHeight: 1.5, maxWidth: '700px' }}>
             Review AI evaluation proposals, accept grades, or submit teacher overrides with complete audit logs.
           </p>
-
-          <Link href="/teacher/grading" className="btn-primary">
+          <WobblyButton href="/teacher/grading" variant="blue">
             ✏️ Open Subjective Grading Workspace →
-          </Link>
-        </section>
+          </WobblyButton>
+        </WobblyCard>
       )}
     </div>
   );
 }
+
 

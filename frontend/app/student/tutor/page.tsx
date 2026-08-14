@@ -3,6 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
+import {
+  WobblyCard,
+  WobblyButton,
+  HandBadge
+} from '@/lib/HandDrawnComponents';
 
 interface ChatMessage {
   sender: 'student' | 'tutor';
@@ -97,37 +102,38 @@ export default function StudentTutorPage() {
   }
 
   return (
-    <div style={{ padding: '32px 24px 60px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Top Breadcrumb & Header */}
+    <div style={{ padding: '32px 24px 60px', maxWidth: '1150px', margin: '0 auto' }}>
+      {/* Top Breadcrumb & Status */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-        <Link href="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>←</span> Back to Portals
+        <Link href="/" style={{ color: 'var(--pen-blue)', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>←</span> Back to Study Desk
         </Link>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <span className="badge badge-emerald">Mastery: On track 📈</span>
-          <span className="badge badge-cyan">Grade 6 Mathematics</span>
+          <HandBadge variant="green">Mastery: On track 📈</HandBadge>
+          <HandBadge variant="yellow">Grade 6 Mathematics</HandBadge>
         </div>
       </div>
 
-      <header className="glass-panel" style={{ padding: '24px 28px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '1.5rem' }}>🤖</span>
-            <h1 style={{ fontSize: '1.6rem', color: '#f8fafc' }}>
-              AI Socratic Tutor
-            </h1>
-            <span className="badge badge-purple">Grounded RAG</span>
+      {/* Header Notebook Card */}
+      <WobblyCard decoration="tape" style={{ marginBottom: '28px', padding: '24px 30px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '1.8rem' }}>✏️</span>
+              <h1 style={{ fontSize: '2rem' }}>AI Socratic Tutor Notebook</h1>
+            </div>
+            <p style={{ color: 'var(--pencil-subtle)', fontSize: '1.05rem' }}>
+              Target Objective: <span className="marker-highlight" style={{ fontWeight: 700, color: 'var(--pencil-black)' }}>Add fractions with like and unlike denominators</span>
+            </p>
           </div>
-          <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-            Target Objective: <span style={{ color: '#f8fafc', fontWeight: 500 }}>Add fractions with like and unlike denominators</span>
-          </p>
+          <HandBadge variant="blue">RAG Verified</HandBadge>
         </div>
-      </header>
+      </WobblyCard>
 
-      {/* Tutor Mode Pills */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+      {/* Mode Selector Buttons */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
         {[
-          { mode: 'explanation', label: '📖 Socratic Explanation', icon: '📖' },
+          { mode: 'explanation', label: '📖 Socratic Dialogue', icon: '📖' },
           { mode: 'hint', label: '💡 Step Hint', icon: '💡' },
           { mode: 'worked_example', label: '✏️ Worked Example', icon: '✏️' },
           { mode: 'guided_practice', label: '🎯 Practice Problem', icon: '🎯' }
@@ -140,17 +146,14 @@ export default function StudentTutorPage() {
                 setSelectedMode(m.mode);
                 handleSend(m.mode);
               }}
+              className="wobbly-btn"
               style={{
-                padding: '10px 18px',
-                background: isActive ? 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)' : 'rgba(15, 23, 42, 0.7)',
-                color: '#ffffff',
-                border: `1px solid ${isActive ? 'rgba(129, 140, 248, 0.5)' : 'var(--border-subtle)'}`,
-                borderRadius: '9999px',
-                fontWeight: 600,
-                fontSize: '0.88rem',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                boxShadow: isActive ? '0 0 15px rgba(99, 102, 241, 0.35)' : 'none'
+                background: isActive ? 'var(--marker-red)' : '#ffffff',
+                color: isActive ? '#ffffff' : 'var(--pencil-black)',
+                boxShadow: isActive ? 'var(--shadow-hard-sm)' : 'var(--shadow-hard)',
+                transform: isActive ? 'translate(2px, 2px)' : 'none',
+                fontSize: '1rem',
+                padding: '8px 18px'
               }}
             >
               {m.label}
@@ -159,10 +162,10 @@ export default function StudentTutorPage() {
         })}
       </div>
 
-      {/* Main Grid: Conversation + Evidence Inspector */}
+      {/* Main Conversation & Evidence Layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
-        {/* Left Column: Interactive Chat History & Input */}
-        <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '580px', padding: '24px' }}>
+        {/* Left Column: Notebook Dialogue Area */}
+        <WobblyCard style={{ display: 'flex', flexDirection: 'column', height: '600px', padding: '24px', background: '#ffffff' }}>
           <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '18px', paddingRight: '8px' }}>
             {messages.map((msg, idx) => (
               <div
@@ -171,75 +174,60 @@ export default function StudentTutorPage() {
                   alignSelf: msg.sender === 'student' ? 'flex-end' : 'flex-start',
                   maxWidth: '82%',
                   padding: '16px 20px',
-                  borderRadius: msg.sender === 'student' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                  background: msg.sender === 'student' 
-                    ? 'linear-gradient(135deg, #4f46e5 0%, #4338ca 100%)' 
-                    : 'rgba(30, 41, 59, 0.85)',
-                  border: msg.sender === 'student' 
-                    ? '1px solid rgba(255, 255, 255, 0.15)' 
-                    : '1px solid var(--border-subtle)',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)'
+                  borderRadius: msg.sender === 'student' ? 'var(--wobbly-card)' : 'var(--wobbly-sm)',
+                  background: msg.sender === 'student' ? 'var(--postit-cyan)' : 'var(--postit-yellow)',
+                  border: '2px solid var(--pencil-black)',
+                  boxShadow: 'var(--shadow-hard-sm)'
                 }}
               >
-                {msg.sender === 'tutor' && (
-                  <div style={{ fontSize: '0.75rem', color: '#38bdf8', fontWeight: 700, marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🤖</span> AI Instructor • {msg.mode?.toUpperCase()}
-                  </div>
-                )}
-                <div style={{ fontSize: '0.95rem', lineHeight: 1.6, color: '#f8fafc' }}>
+                <div style={{ fontSize: '0.85rem', color: msg.sender === 'student' ? 'var(--pen-blue)' : 'var(--marker-red)', fontWeight: 700, marginBottom: '4px' }}>
+                  {msg.sender === 'student' ? 'Alex (Student)' : `🤖 AI Tutor • ${msg.mode?.toUpperCase()}`}
+                </div>
+                <div style={{ fontSize: '1.1rem', lineHeight: 1.5, color: 'var(--pencil-black)' }}>
                   {msg.text}
                 </div>
-                <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', marginTop: '8px', textAlign: 'right' }}>
+                <div style={{ fontSize: '0.8rem', color: 'var(--pencil-subtle)', marginTop: '6px', textAlign: 'right' }}>
                   {msg.timestamp}
                 </div>
               </div>
             ))}
             {loading && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.9rem', fontStyle: 'italic' }}>
-                <span className="pulse-dot online" /> Formulating grounded response...
+              <div style={{ color: 'var(--pen-blue)', fontSize: '1.05rem', fontStyle: 'italic' }}>
+                ✏️ Tutor is writing a grounded note...
               </div>
             )}
           </div>
 
           {/* Chat Input Bar */}
-          <div style={{ marginTop: '20px', display: 'flex', gap: '12px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
+          <div style={{ marginTop: '18px', display: 'flex', gap: '12px', paddingTop: '16px', borderTop: '2px dashed var(--pencil-muted)' }}>
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask a question or enter your answer (e.g. '3/6 + 2/6 = 5/6')..."
-              style={{
-                flex: 1,
-                padding: '14px 18px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border-subtle)',
-                backgroundColor: 'rgba(15, 23, 42, 0.8)',
-                color: '#ffffff',
-                fontSize: '0.95rem',
-                outline: 'none'
-              }}
+              placeholder="Write your answer or question (e.g. '3/6 + 2/6 = 5/6')..."
+              className="wobbly-input"
             />
-            <button
+            <WobblyButton
               onClick={() => handleSend()}
               disabled={loading}
-              className="btn-primary"
-              style={{ minWidth: '100px' }}
+              variant="red"
+              style={{ minWidth: '110px' }}
             >
-              Send 🚀
-            </button>
+              Send ✎
+            </WobblyButton>
           </div>
-        </div>
+        </WobblyCard>
 
-        {/* Right Column: Grounded Evidence Citation Panel */}
+        {/* Right Column: Sticky-Note Textbook Citations */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div className="glass-panel" style={{ padding: '22px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <span style={{ fontSize: '1.2rem' }}>📖</span>
-              <h3 style={{ fontSize: '1.05rem', color: '#38bdf8' }}>Verified Citations</h3>
+          <WobblyCard variant="yellow" decoration="tack-red" style={{ padding: '22px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '1.4rem' }}>📖</span>
+              <h3 style={{ fontSize: '1.25rem' }}>Textbook Passages</h3>
             </div>
-            <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '16px', lineHeight: 1.5 }}>
-              All responses are strictly constrained to published Grade 6 textbook passages.
+            <p style={{ fontSize: '0.95rem', color: 'var(--pencil-black)', opacity: 0.85, marginBottom: '14px' }}>
+              Every Socratic explanation is mathematically bound to published syllabus texts.
             </p>
 
             {messages.length > 0 && messages[messages.length - 1].evidence ? (
@@ -248,44 +236,42 @@ export default function StudentTutorPage() {
                   <div
                     key={i}
                     style={{
-                      padding: '14px',
-                      background: 'rgba(15, 23, 42, 0.7)',
-                      borderRadius: 'var(--radius-sm)',
-                      borderLeft: '3px solid #10b981',
-                      border: '1px solid var(--border-subtle)',
-                      borderLeftColor: '#10b981'
+                      padding: '12px',
+                      background: '#ffffff',
+                      borderRadius: 'var(--wobbly-sm)',
+                      border: '1.5px solid var(--pencil-black)',
+                      boxShadow: '2px 2px 0px var(--pencil-black)'
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <span className="badge badge-emerald" style={{ fontSize: '0.7rem' }}>
-                        Page {ev.page_number}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{ev.section}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                      <HandBadge variant="blue" style={{ fontSize: '0.78rem' }}>Page {ev.page_number}</HandBadge>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--pencil-subtle)' }}>{ev.section}</span>
                     </div>
-                    <div style={{ color: '#cbd5e1', fontSize: '0.82rem', lineHeight: 1.5, fontStyle: 'italic' }}>
+                    <div style={{ color: 'var(--pencil-black)', fontSize: '0.95rem', lineHeight: 1.4, fontStyle: 'italic' }}>
                       &ldquo;{ev.text}&rdquo;
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-subtle)', fontSize: '0.85rem' }}>
+              <div style={{ padding: '16px', textAlign: 'center', color: 'var(--pencil-subtle)', fontSize: '0.95rem' }}>
                 Passages and textbook page citations will appear here in real-time.
               </div>
             )}
-          </div>
+          </WobblyCard>
 
-          {/* Child Safety & Guardrails Pill */}
-          <div className="glass-panel" style={{ padding: '18px', borderLeft: '3px solid #818cf8' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#818cf8', marginBottom: '4px' }}>
+          {/* Child Safety Pin Note */}
+          <WobblyCard variant="green" decoration="tape" style={{ padding: '18px' }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#15803d', marginBottom: '4px' }}>
               🛡️ Student Safety Active
             </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-              System prompt protection, PII redacting, and Socratic non-solution guardrails are active.
+            <div style={{ fontSize: '0.92rem', color: 'var(--pencil-black)', opacity: 0.9, lineHeight: 1.4 }}>
+              System prompt protection, PII redacting, and Socratic non-solution guardrails are enforced.
             </div>
-          </div>
+          </WobblyCard>
         </div>
       </div>
     </div>
   );
 }
+

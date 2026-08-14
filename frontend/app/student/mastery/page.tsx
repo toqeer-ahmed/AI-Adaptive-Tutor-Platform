@@ -3,6 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
+import {
+  WobblyCard,
+  HandBadge
+} from '@/lib/HandDrawnComponents';
 
 interface ConceptMastery {
   id: string;
@@ -79,7 +83,6 @@ export default function StudentMasteryDashboard() {
         }
       }
     } catch (e) {
-      // Fallback preview
       setMasteries([
         {
           id: '1',
@@ -120,98 +123,95 @@ export default function StudentMasteryDashboard() {
   function getStatusBadge(status: string) {
     switch (status) {
       case 'MASTERED':
-        return <span className="badge badge-emerald">Strong 🌟</span>;
+        return <HandBadge variant="green">Strong 🌟</HandBadge>;
       case 'NEEDS_REMEDIATION':
-        return <span className="badge badge-amber">Getting there 💡</span>;
+        return <HandBadge variant="red">Getting there 💡</HandBadge>;
       default:
-        return <span className="badge badge-cyan">On track 📈</span>;
+        return <HandBadge variant="blue">On track 📈</HandBadge>;
     }
   }
 
-  function getProgressColor(status: string) {
+  function getProgressFill(status: string) {
     switch (status) {
-      case 'MASTERED': return 'linear-gradient(90deg, #10b981, #34d399)';
-      case 'NEEDS_REMEDIATION': return 'linear-gradient(90deg, #f59e0b, #f43f5e)';
-      default: return 'linear-gradient(90deg, #38bdf8, #818cf8)';
+      case 'MASTERED': return '#15803d';
+      case 'NEEDS_REMEDIATION': return 'var(--marker-red)';
+      default: return 'var(--pen-blue)';
     }
   }
 
   return (
-    <div style={{ padding: '32px 24px 60px', maxWidth: '1200px', margin: '0 auto' }}>
+    <div style={{ padding: '32px 24px 60px', maxWidth: '1150px', margin: '0 auto' }}>
       {/* Navigation Breadcrumb */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>←</span> Back to Portals
+        <Link href="/" style={{ color: 'var(--pen-blue)', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>←</span> Back to Study Desk
         </Link>
-        <span className="badge badge-purple">EWMA Bayesian Knowledge Tracing</span>
+        <HandBadge variant="purple">EWMA Bayesian Knowledge Tracing</HandBadge>
       </div>
 
-      <header className="glass-panel" style={{ padding: '28px', marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '2rem', marginBottom: '8px', color: '#f8fafc' }}>
-          Student Knowledge Map & Mastery
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: 1.5 }}>
-          Mathematically deterministic concept mastery tracking with memory decay modeling and spaced review schedules.
+      {/* Header Notebook Card */}
+      <WobblyCard decoration="tape" style={{ marginBottom: '32px', padding: '24px 30px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px' }}>
+          <span style={{ fontSize: '2rem' }}>📐</span>
+          <h1 style={{ fontSize: '2.1rem' }}>Student Knowledge Map & Mastery Log</h1>
+        </div>
+        <p style={{ color: 'var(--pencil-subtle)', fontSize: '1.1rem', lineHeight: 1.5 }}>
+          Mathematically deterministic concept mastery tracing with memory retention decay and spaced repetition dates.
         </p>
-      </header>
+      </WobblyCard>
 
-      {/* 3 Overview Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '36px' }}>
-        <div className="glass-panel" style={{ padding: '24px', borderLeft: '4px solid #10b981' }}>
-          <div style={{ fontSize: '0.85rem', color: '#34d399', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Concepts Mastered
+      {/* 3 Overview Stat Post-it Notes */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '24px', marginBottom: '36px' }}>
+        <WobblyCard variant="green" decoration="tack-red" tilt="left-sm" style={{ padding: '22px' }}>
+          <div style={{ fontSize: '1.1rem', color: '#15803d', fontWeight: 700 }}>
+            CONCEPTS MASTERED
           </div>
-          <div style={{ fontSize: '2.8rem', fontWeight: 800, color: '#f8fafc', margin: '8px 0 4px' }}>
+          <div style={{ fontSize: '3rem', fontWeight: 700, fontFamily: 'var(--font-heading)', margin: '4px 0', color: 'var(--pencil-black)' }}>
             {masteredCount}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
-            Retention above &ge; 85% threshold
+          <div style={{ fontSize: '0.95rem', color: 'var(--pencil-subtle)' }}>
+            Retention above &ge; 85% benchmark
           </div>
-        </div>
+        </WobblyCard>
 
-        <div className="glass-panel" style={{ padding: '24px', borderLeft: '4px solid #38bdf8' }}>
-          <div style={{ fontSize: '0.85rem', color: '#38bdf8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            In Progress
+        <WobblyCard variant="cyan" decoration="tape" tilt="none" style={{ padding: '22px' }}>
+          <div style={{ fontSize: '1.1rem', color: 'var(--pen-blue)', fontWeight: 700 }}>
+            IN PROGRESS
           </div>
-          <div style={{ fontSize: '2.8rem', fontWeight: 800, color: '#f8fafc', margin: '8px 0 4px' }}>
+          <div style={{ fontSize: '3rem', fontWeight: 700, fontFamily: 'var(--font-heading)', margin: '4px 0', color: 'var(--pencil-black)' }}>
             {inProgressCount}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
-            Active practice & review band (40–75%)
+          <div style={{ fontSize: '0.95rem', color: 'var(--pencil-subtle)' }}>
+            Active practice band (40–75%)
           </div>
-        </div>
+        </WobblyCard>
 
-        <div className="glass-panel" style={{ padding: '24px', borderLeft: '4px solid #f59e0b' }}>
-          <div style={{ fontSize: '0.85rem', color: '#fbbf24', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            Target Remediation
+        <WobblyCard variant="orange" decoration="tack-blue" tilt="right-sm" style={{ padding: '22px' }}>
+          <div style={{ fontSize: '1.1rem', color: '#c2410c', fontWeight: 700 }}>
+            TARGET REMEDIATION
           </div>
-          <div style={{ fontSize: '2.8rem', fontWeight: 800, color: '#f8fafc', margin: '8px 0 4px' }}>
+          <div style={{ fontSize: '3rem', fontWeight: 700, fontFamily: 'var(--font-heading)', margin: '4px 0', color: 'var(--pencil-black)' }}>
             {remediationCount}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
+          <div style={{ fontSize: '0.95rem', color: 'var(--pencil-subtle)' }}>
             Prerequisite gap &lt; 40% threshold
           </div>
-        </div>
+        </WobblyCard>
       </div>
 
-      {/* Concept Grid Section */}
-      <section className="glass-panel" style={{ padding: '28px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '1.35rem', color: '#f8fafc' }}>
-            Curriculum Concept Breakdown
-          </h2>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            Grade 6 • Mathematics
-          </span>
+      {/* Concept Breakdown Notebook Area */}
+      <WobblyCard style={{ padding: '28px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+          <h2 style={{ fontSize: '1.5rem' }}>Curriculum Concept Breakdown</h2>
+          <HandBadge variant="yellow">Grade 6 • Mathematics</HandBadge>
         </div>
 
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <span className="pulse-dot online" style={{ display: 'inline-block', marginRight: '8px' }} />
-            Computing Bayesian mastery curves...
+          <div style={{ padding: '30px', textAlign: 'center', color: 'var(--pencil-subtle)', fontSize: '1.1rem' }}>
+            ✎ Computing Bayesian mastery curves...
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '22px' }}>
             {masteries.map((m) => {
               const scorePct = Math.round(m.mastery_score * 100);
               const confPct = Math.round(m.confidence * 100);
@@ -220,54 +220,55 @@ export default function StudentMasteryDashboard() {
                 <div
                   key={m.id}
                   style={{
-                    padding: '20px',
-                    background: 'rgba(15, 23, 42, 0.65)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--border-subtle)'
+                    padding: '18px 20px',
+                    background: '#ffffff',
+                    borderRadius: 'var(--wobbly-sm)',
+                    border: '2px solid var(--pencil-black)',
+                    boxShadow: 'var(--shadow-hard-sm)'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#f8fafc', marginBottom: '2px' }}>
+                      <div style={{ fontWeight: 700, fontSize: '1.15rem', color: 'var(--pencil-black)', marginBottom: '2px' }}>
                         {m.concept_title || `Concept ${m.concept_id.slice(0, 8)}`}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-subtle)' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--pencil-subtle)' }}>
                         ID: {m.concept_id}
                       </div>
                     </div>
                     {getStatusBadge(m.status)}
                   </div>
 
-                  {/* Fluid Progress Meter */}
-                  <div style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', color: '#cbd5e1', marginBottom: '6px' }}>
-                      <span>Progress Meter</span>
-                      <span style={{ fontWeight: 700 }}>{scorePct}%</span>
+                  {/* Sketched Progress Bar */}
+                  <div style={{ marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--pencil-black)', fontWeight: 700, marginBottom: '4px' }}>
+                      <span>Mastery Progress</span>
+                      <span>{scorePct}%</span>
                     </div>
-                    <div style={{ height: '8px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '9999px', overflow: 'hidden' }}>
+                    <div style={{ height: '12px', background: 'var(--pencil-muted)', border: '1.5px solid var(--pencil-black)', borderRadius: 'var(--wobbly-sm)', overflow: 'hidden' }}>
                       <div
                         style={{
                           width: `${scorePct}%`,
                           height: '100%',
-                          background: getProgressColor(m.status),
-                          borderRadius: '9999px',
-                          transition: 'width 0.4s ease'
+                          backgroundColor: getProgressFill(m.status),
+                          transition: 'width 0.3s ease'
                         }}
                       />
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.05)' }}>
-                    <span>Confidence: <strong style={{ color: '#f8fafc' }}>{confPct}%</strong> ({m.attempt_count} attempts)</span>
-                    <span>Review: <strong style={{ color: '#f8fafc' }}>{m.next_review_due_at ? new Date(m.next_review_due_at).toLocaleDateString() : 'N/A'}</strong></span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', color: 'var(--pencil-subtle)', paddingTop: '10px', borderTop: '1px dashed var(--pencil-muted)' }}>
+                    <span>Confidence: <strong style={{ color: 'var(--pencil-black)' }}>{confPct}%</strong> ({m.attempt_count} attempts)</span>
+                    <span>Review Due: <strong style={{ color: 'var(--pencil-black)' }}>{m.next_review_due_at ? new Date(m.next_review_due_at).toLocaleDateString() : 'Today'}</strong></span>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
-      </section>
+      </WobblyCard>
     </div>
   );
 }
+
 

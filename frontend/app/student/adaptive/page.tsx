@@ -3,6 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
+import {
+  WobblyCard,
+  WobblyButton,
+  HandBadge
+} from '@/lib/HandDrawnComponents';
 
 interface AdaptiveDecision {
   decision: string;
@@ -74,14 +79,14 @@ export default function StudentAdaptivePage() {
   function getDecisionBadge(dec: string) {
     switch (dec) {
       case 'CHALLENGE':
-        return <span className="badge badge-purple" style={{ fontSize: '0.85rem' }}>🚀 Challenge Level</span>;
+        return <HandBadge variant="purple">🚀 Challenge Level</HandBadge>;
       case 'REMEDIATE':
       case 'PREREQUISITE_REMEDIATION':
-        return <span className="badge badge-amber" style={{ fontSize: '0.85rem' }}>💡 Prerequisite Review</span>;
+        return <HandBadge variant="red">💡 Prerequisite Review</HandBadge>;
       case 'SPACED_REVIEW':
-        return <span className="badge badge-emerald" style={{ fontSize: '0.85rem' }}>🔄 Spaced Retention</span>;
+        return <HandBadge variant="green">🔄 Spaced Retention</HandBadge>;
       default:
-        return <span className="badge badge-cyan" style={{ fontSize: '0.85rem' }}>📈 Active Practice</span>;
+        return <HandBadge variant="blue">📈 Active Practice</HandBadge>;
     }
   }
 
@@ -89,95 +94,111 @@ export default function StudentAdaptivePage() {
     <div style={{ padding: '32px 24px 60px', maxWidth: '1000px', margin: '0 auto' }}>
       {/* Breadcrumb Navigation */}
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Link href="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span>←</span> Back to Portals
+        <Link href="/" style={{ color: 'var(--pen-blue)', textDecoration: 'none', fontSize: '1.05rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span>←</span> Back to Study Desk
         </Link>
-        <span className="badge badge-emerald">Deterministic Rule Engine</span>
+        <HandBadge variant="green">Deterministic Rule Engine</HandBadge>
       </div>
 
-      <header className="glass-panel" style={{ padding: '28px', marginBottom: '32px' }}>
+      {/* Header Notebook Card */}
+      <WobblyCard decoration="tape" style={{ marginBottom: '32px', padding: '24px 30px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-          <span style={{ fontSize: '1.6rem' }}>🎯</span>
-          <h1 style={{ fontSize: '1.9rem', color: '#f8fafc' }}>
-            Adaptive Learning Path
-          </h1>
+          <span style={{ fontSize: '1.8rem' }}>🎯</span>
+          <h1 style={{ fontSize: '2rem' }}>Adaptive Learning Recommendations</h1>
         </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.98rem', lineHeight: 1.5 }}>
-          Real-time activity selector driven by strict mathematical mastery boundaries and prerequisite graph traversal — 100% deterministic with zero LLM state drift.
+        <p style={{ color: 'var(--pencil-subtle)', fontSize: '1.05rem', lineHeight: 1.5 }}>
+          Determines optimal learning pathways based on Bayesian mastery states and curriculum dependency graphs (0 LLM state authority).
         </p>
-      </header>
+      </WobblyCard>
 
-      {error && (
-        <div style={{ padding: '14px', borderRadius: 'var(--radius-sm)', backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.4)', marginBottom: '24px', color: '#f87171' }}>
-          {error}
+      {/* Target Concept Selector Desk */}
+      <WobblyCard variant="yellow" decoration="tack-yellow" tilt="left-sm" style={{ padding: '24px', marginBottom: '32px' }}>
+        <h3 style={{ fontSize: '1.25rem', marginBottom: '16px' }}>Evaluate Concept Recommendation</h3>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '260px' }}>
+            <label style={{ display: 'block', fontSize: '0.95rem', fontWeight: 700, color: 'var(--pencil-black)', marginBottom: '6px' }}>
+              Target Prerequisite Concept:
+            </label>
+            <select
+              value={conceptId}
+              onChange={(e) => setConceptId(e.target.value)}
+              className="wobbly-input"
+              style={{ padding: '10px 14px', background: '#ffffff' }}
+            >
+              <option value="00000000-0000-0000-0000-000000000004">Fractions: Addition & Subtraction (Grade 6)</option>
+              <option value="00000000-0000-0000-0000-000000000005">Fractions: Least Common Multiples (LCM)</option>
+              <option value="00000000-0000-0000-0000-000000000006">Fractions: Mixed Number Simplification</option>
+            </select>
+          </div>
+          <WobblyButton
+            onClick={handleGetDecision}
+            disabled={isLoading}
+            variant="red"
+          >
+            {isLoading ? '✎ Computing...' : 'Compute Next Step ✎'}
+          </WobblyButton>
         </div>
-      )}
-
-      {/* Action Trigger Card */}
-      <section className="glass-panel" style={{ padding: '32px', marginBottom: '32px', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '1.35rem', marginBottom: '10px', color: '#f8fafc' }}>
-          Compute Next Optimal Activity
-        </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.92rem', maxWidth: '580px', margin: '0 auto 24px', lineHeight: 1.5 }}>
-          Evaluates your latest EWMA mastery scores, attempt stability, prerequisite mastery chains, and spaced repetition intervals.
-        </p>
-
-        <button
-          onClick={handleGetDecision}
-          disabled={isLoading}
-          className="btn-primary"
-          style={{ padding: '14px 32px', fontSize: '1.05rem' }}
-        >
-          {isLoading ? 'Evaluating Adaptive Graph...' : '🎯 Get Next Adaptive Activity'}
-        </button>
-      </section>
+      </WobblyCard>
 
       {/* Decision Output Card */}
       {decision && (
-        <section className="glass-panel" style={{ padding: '32px', borderLeft: '4px solid #818cf8' }}>
+        <WobblyCard decoration="tack-red" style={{ padding: '30px', borderLeft: '5px solid var(--pen-blue)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {getDecisionBadge(decision.decision)}
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                Priority Queue Level #{decision.priority_level}
-              </span>
+            <div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--pencil-subtle)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                Recommended Action
+              </div>
+              <div style={{ fontSize: '1.7rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--pencil-black)', marginTop: '2px' }}>
+                {decision.decision.replace('_', ' ')}
+              </div>
             </div>
-            <span className="badge badge-purple">
-              Target Concept: {decision.target_concept_id}
-            </span>
+            {getDecisionBadge(decision.decision)}
           </div>
 
-          {/* Difficulty Stars */}
-          <div style={{ padding: '18px', background: 'rgba(15, 23, 42, 0.7)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Recommended Difficulty</span>
-              <span style={{ fontWeight: 700, color: '#38bdf8' }}>Level {decision.recommended_difficulty} / 5</span>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ padding: '14px 18px', background: 'var(--postit-yellow)', borderRadius: 'var(--wobbly-sm)', border: '1.5px solid var(--pencil-black)' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--pencil-subtle)', fontWeight: 700 }}>TARGET CONCEPT</div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--pencil-black)', marginTop: '2px' }}>
+                {decision.target_concept_id}
+              </div>
             </div>
-            <div style={{ fontSize: '1.3rem', color: '#fbbf24', letterSpacing: '4px' }}>
-              {'★'.repeat(decision.recommended_difficulty)}{'☆'.repeat(5 - decision.recommended_difficulty)}
+
+            <div style={{ padding: '14px 18px', background: 'var(--postit-cyan)', borderRadius: 'var(--wobbly-sm)', border: '1.5px solid var(--pencil-black)' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--pencil-subtle)', fontWeight: 700 }}>RECOMMENDED DIFFICULTY</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--pen-blue)', marginTop: '2px' }}>
+                Level {decision.recommended_difficulty} / 5 {'★'.repeat(decision.recommended_difficulty)}{'☆'.repeat(5 - decision.recommended_difficulty)}
+              </div>
+            </div>
+
+            <div style={{ padding: '14px 18px', background: 'var(--postit-green)', borderRadius: 'var(--wobbly-sm)', border: '1.5px solid var(--pencil-black)' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--pencil-subtle)', fontWeight: 700 }}>GRAPH PRIORITY</div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 700, color: '#15803d', marginTop: '2px' }}>
+                Priority #{decision.priority_level} (Immediate)
+              </div>
             </div>
           </div>
 
-          <div style={{ background: 'rgba(15, 23, 42, 0.7)', padding: '20px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', marginBottom: '20px' }}>
-            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#38bdf8', marginBottom: '6px' }}>
-              Deterministic Rule Rationale
+          <div style={{ padding: '18px 22px', background: '#fdfbf7', borderRadius: 'var(--wobbly-sm)', border: '2px dashed var(--pencil-muted)', marginBottom: '24px' }}>
+            <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--pencil-black)', marginBottom: '4px' }}>
+              Deterministic Rule Engine Rationale:
             </div>
-            <div style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: 1.6 }}>
-              {decision.reason}
-            </div>
+            <p style={{ color: 'var(--pencil-black)', fontSize: '1.05rem', lineHeight: 1.5 }}>
+              &ldquo;{decision.reason}&rdquo;
+            </p>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', paddingTop: '16px', borderTop: '1px solid var(--border-subtle)' }}>
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-subtle)' }}>
-              ⚡ Evaluated in &lt;1.8ms via AdaptiveDecisionEngine (0 LLM Tokens)
-            </span>
-            <Link href="/student/tutor" className="btn-primary" style={{ padding: '8px 18px', fontSize: '0.88rem' }}>
-              Start Learning Activity →
-            </Link>
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <WobblyButton href="/student/tutor" variant="red">
+              Start Practice with AI Tutor →
+            </WobblyButton>
+            <WobblyButton href="/student/mastery" variant="secondary">
+              View Knowledge Graph Logs
+            </WobblyButton>
           </div>
-        </section>
+        </WobblyCard>
       )}
     </div>
   );
 }
+
 

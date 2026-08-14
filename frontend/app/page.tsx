@@ -3,6 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api-client';
+import {
+  WobblyCard,
+  WobblyButton,
+  HandBadge,
+  ScribbleUnderline,
+  HandDrawnArrow
+} from '@/lib/HandDrawnComponents';
 
 interface HealthStatus {
   status: string;
@@ -38,38 +45,46 @@ export default function Home() {
     {
       title: 'AI Socratic Tutor',
       badge: 'Socratic v1.0',
-      badgeColor: 'badge-cyan',
+      badgeVariant: 'yellow' as const,
+      variant: 'yellow' as const,
+      tilt: 'left-sm' as const,
+      decoration: 'tack-red' as const,
       path: '/student/tutor',
-      desc: 'Adaptive conversational tutoring grounded exclusively in approved grade-level curriculum.',
-      icon: '🧠',
-      accent: '#38bdf8'
+      desc: 'Conversational Socratic tutoring grounded strictly in approved Grade 6 Mathematics textbooks.',
+      icon: '✏️'
     },
     {
       title: 'Knowledge Map & Mastery',
       badge: 'EWMA Engine',
-      badgeColor: 'badge-emerald',
+      badgeVariant: 'green' as const,
+      variant: 'green' as const,
+      tilt: 'right-sm' as const,
+      decoration: 'tape' as const,
       path: '/student/mastery',
-      desc: 'Deterministic concept mastery visualization, memory decay tracking, and spaced review schedules.',
-      icon: '📈',
-      accent: '#34d399'
+      desc: 'Deterministic concept mastery visualization, retention decay tracking, and spaced review logs.',
+      icon: '📐'
     },
     {
       title: 'Adaptive Learning Path',
       badge: 'Rule-Based',
-      badgeColor: 'badge-purple',
+      badgeVariant: 'purple' as const,
+      variant: 'purple' as const,
+      tilt: 'left' as const,
+      decoration: 'tack-blue' as const,
       path: '/student/adaptive',
-      desc: 'Real-time next-activity recommendations tailored to current prerequisite mastery state.',
-      icon: '🎯',
-      accent: '#c084fc'
+      desc: 'Real-time next-activity selection tailored to prerequisite graph mastery (0 LLM state drift).',
+      icon: '🎯'
     },
     {
       title: 'Assessment Player',
-      badge: 'Deterministic Grading',
-      badgeColor: 'badge-amber',
+      badge: 'Deterministic Math',
+      badgeVariant: 'blue' as const,
+      variant: 'cyan' as const,
+      tilt: 'right' as const,
+      decoration: 'tape' as const,
       path: '/student/assessments',
-      desc: 'Interactive quiz and assessment engine with math expression parsing and instant feedback.',
-      icon: '✍️',
-      accent: '#fbbf24'
+      desc: 'Interactive quiz player with mathematical expression parsing and instant step feedback.',
+      icon: '📝'
     }
   ];
 
@@ -77,189 +92,235 @@ export default function Home() {
     {
       title: 'Curriculum Studio & Review',
       badge: 'Human-in-Loop',
-      badgeColor: 'badge-cyan',
+      badgeVariant: 'blue' as const,
+      variant: 'white' as const,
+      tilt: 'left-sm' as const,
+      decoration: 'tape' as const,
       path: '/teacher/curriculum/review',
       desc: 'AI syllabus extraction inspector with state-gated approval workflow and immutable publishing.',
-      icon: '📚',
-      accent: '#38bdf8'
+      icon: '📚'
     },
     {
-      title: 'Assessment & Question Bank',
-      badge: 'AI Generation',
-      badgeColor: 'badge-purple',
+      title: 'Question Bank & Generator',
+      badge: '6-Step Verifier',
+      badgeVariant: 'purple' as const,
+      variant: 'yellow' as const,
+      tilt: 'right-sm' as const,
+      decoration: 'tack-yellow' as const,
       path: '/teacher/assessments',
-      desc: 'AI question generator with 6-step validation pipeline and deterministic math verification.',
-      icon: '📝',
-      accent: '#c084fc'
+      desc: 'AI question authoring with deterministic math verification, rubric checks, and teacher publishing.',
+      icon: '✍️'
     },
     {
       title: 'Teacher Analytics Dashboard',
       badge: 'Class Heatmaps',
-      badgeColor: 'badge-emerald',
+      badgeVariant: 'green' as const,
+      variant: 'green' as const,
+      tilt: 'left' as const,
+      decoration: 'tape' as const,
       path: '/teacher/dashboard',
-      desc: 'Concept mastery heatmaps, misconception trends, and targeted remediation rosters.',
-      icon: '📊',
-      accent: '#34d399'
+      desc: 'Classroom mastery heatmaps, misconception diagnoses, and targeted remediation rosters.',
+      icon: '📊'
     },
     {
       title: 'Parent Intelligence Digest',
-      badge: 'Parent Portal',
-      badgeColor: 'badge-amber',
+      badge: 'Zero PII Leakage',
+      badgeVariant: 'red' as const,
+      variant: 'orange' as const,
+      tilt: 'right' as const,
+      decoration: 'tack-red' as const,
       path: '/parent/dashboard',
-      desc: 'Qualitative progress summaries and teacher digest views with zero raw internal data leakage.',
-      icon: '👨‍👩‍👧',
-      accent: '#fbbf24'
+      desc: 'Qualitative progress summaries and teacher note cards with zero internal data exposure.',
+      icon: '🏡'
     }
   ];
 
   return (
-    <main style={{ minHeight: '100vh', padding: '48px 24px 80px', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Top Header / Navigation Bar */}
-      <header className="animate-fade-in delay-1" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '56px', flexWrap: 'wrap', gap: '16px' }}>
+    <main style={{ minHeight: '100vh', padding: '40px 24px 80px', maxWidth: '1100px', margin: '0 auto' }}>
+      {/* Top Header Pinboard Bar */}
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '48px', flexWrap: 'wrap', gap: '16px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
-            width: '42px',
-            height: '42px',
-            borderRadius: '12px',
-            background: 'linear-gradient(135deg, #6366f1 0%, #38bdf8 100%)',
+            width: '46px',
+            height: '46px',
+            borderRadius: 'var(--wobbly-sm)',
+            border: '2.5px solid var(--pencil-black)',
+            background: 'var(--marker-red)',
+            color: '#ffffff',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '1.4rem',
-            boxShadow: '0 0 20px rgba(99, 102, 241, 0.4)'
+            fontSize: '1.5rem',
+            boxShadow: '3px 3px 0px 0px var(--pencil-black)',
+            transform: 'rotate(-3deg)'
           }}>
-            ⚡
+            ✎
           </div>
           <div>
-            <span style={{ fontSize: '1.25rem', fontWeight: 800, letterSpacing: '-0.02em', color: '#f8fafc' }}>
-              Adaptive<span style={{ color: '#818cf8' }}>Edu</span>
+            <span style={{ fontSize: '1.6rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--pencil-black)' }}>
+              Adaptive<span style={{ color: 'var(--marker-red)' }}>Edu</span>
             </span>
-            <span style={{ marginLeft: '8px', fontSize: '0.75rem', padding: '2px 8px', borderRadius: '9999px', background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8', border: '1px solid rgba(99, 102, 241, 0.3)', fontWeight: 600 }}>
-              v1.0 Production
+            <span style={{ marginLeft: '10px', fontSize: '0.9rem', padding: '2px 8px', borderRadius: 'var(--wobbly-sm)', background: 'var(--postit-yellow)', border: '1.5px solid var(--pencil-black)', fontWeight: 700 }}>
+              Sketchbook v1.0
             </span>
           </div>
         </div>
 
-        {/* Live System Health Pill */}
-        <div className="glass-panel" style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '10px', borderRadius: '9999px' }}>
-          <div className={`pulse-dot ${health?.status === 'healthy' ? 'online' : ''}`} style={{ background: health?.status === 'healthy' ? '#34d399' : '#f43f5e' }} />
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: health?.status === 'healthy' ? '#34d399' : '#f43f5e' }}>
-            {loading ? 'Probing cluster...' : health?.status === 'healthy' ? 'API Operational (8000)' : 'API Degraded'}
-          </span>
-          <span style={{ fontSize: '0.8rem', color: '#64748b', borderLeft: '1px solid rgba(255,255,255,0.1)', paddingLeft: '8px' }}>
-            RTO &lt;15m | RPO &lt;5m
+        {/* Pinned Operational Status Note */}
+        <div style={{
+          padding: '8px 18px',
+          background: '#ffffff',
+          border: '2px solid var(--pencil-black)',
+          borderRadius: 'var(--wobbly-sm)',
+          boxShadow: 'var(--shadow-hard-sm)',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+          transform: 'rotate(1deg)'
+        }}>
+          <div className="tape-strip" style={{ width: '60px', height: '18px', top: '-10px' }} />
+          <span style={{
+            width: '10px',
+            height: '10px',
+            borderRadius: '50%',
+            backgroundColor: health?.status === 'healthy' ? '#15803d' : '#b91c1c',
+            border: '1.5px solid var(--pencil-black)'
+          }} />
+          <span style={{ fontSize: '0.95rem', fontWeight: 700 }}>
+            {loading ? 'Checking cluster...' : health?.status === 'healthy' ? 'API Operational (8000)' : 'API Degraded'}
           </span>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="animate-fade-in delay-2" style={{ textAlign: 'center', marginBottom: '64px' }}>
-        <div className="badge badge-purple" style={{ marginBottom: '16px' }}>
-          ✨ Curriculum-Grounded • Deterministic Mastery • Multi-Tenant
+      {/* Hero Notebook Section */}
+      <section style={{ textAlign: 'center', marginBottom: '56px', position: 'relative' }}>
+        <div style={{ display: 'inline-block', marginBottom: '8px' }}>
+          <HandBadge variant="yellow">
+            ✨ Curriculum-Grounded • Deterministic Mastery • Multi-Tenant
+          </HandBadge>
         </div>
-        <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', lineHeight: 1.1, marginBottom: '20px' }}>
-          The Intelligence Layer for <br />
-          <span className="gradient-text">Adaptive K–12 Education</span>
+
+        <h1 style={{ fontSize: 'clamp(2.4rem, 5vw, 3.8rem)', marginBottom: '12px', position: 'relative' }}>
+          The Human-Centered Layer for <br />
+          <span style={{ color: 'var(--marker-red)' }}>Adaptive K–12 Learning</span>
         </h1>
-        <p style={{ fontSize: '1.2rem', color: 'var(--text-muted)', maxWidth: '720px', margin: '0 auto 32px', lineHeight: 1.6 }}>
-          Combining LLM natural-language Socratic tutoring with mathematically deterministic knowledge tracing, human-gated curriculum governance, and strict tenant isolation.
+        <div style={{ maxWidth: '320px', margin: '0 auto 16px' }}>
+          <ScribbleUnderline />
+        </div>
+
+        <p style={{ fontSize: '1.25rem', color: 'var(--pencil-subtle)', maxWidth: '700px', margin: '0 auto 28px', lineHeight: 1.5 }}>
+          Combining natural-language Socratic dialogue with mathematically deterministic knowledge tracing, human-in-the-loop curriculum control, and strict tenant isolation.
         </p>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
-          <Link href="/student/tutor" className="btn-primary">
-            Launch AI Tutor Workspace →
-          </Link>
-          <Link href="/teacher/dashboard" className="btn-secondary">
-            Open Teacher Studio
-          </Link>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <WobblyButton href="/student/tutor" variant="red">
+            Open AI Tutor Notebook →
+          </WobblyButton>
+          <WobblyButton href="/teacher/dashboard" variant="blue">
+            Educator Studio Desk
+          </WobblyButton>
+        </div>
+
+        <div style={{ position: 'absolute', right: '4%', bottom: '-15px', transform: 'rotate(8deg)' }}>
+          <HandDrawnArrow />
+          <div style={{ fontSize: '0.85rem', color: 'var(--pen-blue)', fontWeight: 700 }}>Start practicing!</div>
         </div>
       </section>
 
-      {/* Grid: Student Learning Suite */}
-      <section className="animate-fade-in delay-3" style={{ marginBottom: '48px' }}>
+      {/* Grid 1: Student Learning Notebooks */}
+      <section style={{ marginBottom: '52px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '1.3rem' }}>🎓</span>
-          <h2 style={{ fontSize: '1.35rem', color: '#f8fafc' }}>Student Learning Experience</h2>
-          <span className="badge badge-cyan">Grades 4–8</span>
+          <span style={{ fontSize: '1.6rem' }}>🎒</span>
+          <h2 style={{ fontSize: '1.6rem' }}>Student Learning Notebooks</h2>
+          <HandBadge variant="blue">Grades 4–8</HandBadge>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
           {studentPortals.map((portal) => (
-            <Link key={portal.path} href={portal.path} style={{ textDecoration: 'none' }}>
-              <div className="glass-panel" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'pointer' }}>
+            <Link key={portal.path} href={portal.path} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <WobblyCard
+                variant={portal.variant}
+                decoration={portal.decoration}
+                tilt={portal.tilt}
+                style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'pointer' }}
+              >
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                    <div style={{ fontSize: '2rem' }}>{portal.icon}</div>
-                    <span className={`badge ${portal.badgeColor}`}>{portal.badge}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '2.2rem' }}>{portal.icon}</span>
+                    <HandBadge variant={portal.badgeVariant}>{portal.badge}</HandBadge>
                   </div>
-                  <h3 style={{ fontSize: '1.15rem', color: '#f8fafc', marginBottom: '8px' }}>
-                    {portal.title}
-                  </h3>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  <h3 style={{ fontSize: '1.35rem', marginBottom: '6px' }}>{portal.title}</h3>
+                  <p style={{ fontSize: '1.02rem', color: 'var(--pencil-black)', opacity: 0.85, lineHeight: 1.45 }}>
                     {portal.desc}
                   </p>
                 </div>
-                <div style={{ marginTop: '20px', fontSize: '0.85rem', fontWeight: 600, color: portal.accent, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  Enter Workspace <span>→</span>
+                <div style={{ marginTop: '18px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--pen-blue)', textDecoration: 'underline' }}>
+                  Open Workspace <span>→</span>
                 </div>
-              </div>
+              </WobblyCard>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* Grid: Teacher & Governance Studio */}
-      <section className="animate-fade-in delay-4" style={{ marginBottom: '48px' }}>
+      {/* Grid 2: Educator & Governance Studio */}
+      <section style={{ marginBottom: '52px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '1.3rem' }}>🛡️</span>
-          <h2 style={{ fontSize: '1.35rem', color: '#f8fafc' }}>Educator & Governance Studio</h2>
-          <span className="badge badge-purple">Teacher • Admin</span>
+          <span style={{ fontSize: '1.6rem' }}>📌</span>
+          <h2 style={{ fontSize: '1.6rem' }}>Educator & Governance Studio</h2>
+          <HandBadge variant="purple">Teacher • Admin</HandBadge>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '20px' }}>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
           {educatorPortals.map((portal) => (
-            <Link key={portal.path} href={portal.path} style={{ textDecoration: 'none' }}>
-              <div className="glass-panel" style={{ padding: '24px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'pointer' }}>
+            <Link key={portal.path} href={portal.path} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <WobblyCard
+                variant={portal.variant}
+                decoration={portal.decoration}
+                tilt={portal.tilt}
+                style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'pointer' }}
+              >
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                    <div style={{ fontSize: '2rem' }}>{portal.icon}</div>
-                    <span className={`badge ${portal.badgeColor}`}>{portal.badge}</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                    <span style={{ fontSize: '2.2rem' }}>{portal.icon}</span>
+                    <HandBadge variant={portal.badgeVariant}>{portal.badge}</HandBadge>
                   </div>
-                  <h3 style={{ fontSize: '1.15rem', color: '#f8fafc', marginBottom: '8px' }}>
-                    {portal.title}
-                  </h3>
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  <h3 style={{ fontSize: '1.35rem', marginBottom: '6px' }}>{portal.title}</h3>
+                  <p style={{ fontSize: '1.02rem', color: 'var(--pencil-black)', opacity: 0.85, lineHeight: 1.45 }}>
                     {portal.desc}
                   </p>
                 </div>
-                <div style={{ marginTop: '20px', fontSize: '0.85rem', fontWeight: 600, color: portal.accent, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <div style={{ marginTop: '18px', fontSize: '1.05rem', fontWeight: 700, color: 'var(--marker-red)', textDecoration: 'underline' }}>
                   Manage Studio <span>→</span>
                 </div>
-              </div>
+              </WobblyCard>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* System Architecture Metrics Footer */}
-      <section className="glass-panel animate-fade-in delay-5" style={{ padding: '28px', marginTop: '24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', textAlign: 'center' }}>
+      {/* Notebook Footer System Metrics */}
+      <WobblyCard decoration="tape" style={{ padding: '24px 32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '20px', textAlign: 'center' }}>
           <div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#38bdf8' }}>100%</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>Deterministic Decisions</div>
+            <div style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--pen-blue)' }}>100%</div>
+            <div style={{ fontSize: '1rem', color: 'var(--pencil-subtle)' }}>Deterministic Decisions</div>
           </div>
           <div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#34d399' }}>85 / 85</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>Test Suites Passed</div>
+            <div style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: '#15803d' }}>85 / 85</div>
+            <div style={{ fontSize: '1rem', color: 'var(--pencil-subtle)' }}>Test Suites Passed</div>
           </div>
           <div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#818cf8' }}>&lt; 5 ms</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>Auth p50 Latency</div>
+            <div style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--marker-red)' }}>&lt; 5 ms</div>
+            <div style={{ fontSize: '1rem', color: 'var(--pencil-subtle)' }}>Auth p50 Latency</div>
           </div>
           <div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fbbf24' }}>0.0%</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '4px' }}>Cross-Tenant Leaks</div>
+            <div style={{ fontSize: '2rem', fontFamily: 'var(--font-heading)', fontWeight: 700, color: '#854d0e' }}>0.0%</div>
+            <div style={{ fontSize: '1rem', color: 'var(--pencil-subtle)' }}>Cross-Tenant Leaks</div>
           </div>
         </div>
-      </section>
+      </WobblyCard>
     </main>
   );
 }
