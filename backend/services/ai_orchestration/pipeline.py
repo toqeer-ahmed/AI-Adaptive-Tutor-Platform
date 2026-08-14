@@ -68,7 +68,8 @@ class CurriculumExtractionPipeline:
             request=request,
             organization_id=actor.organization_id,
             user_id=actor.id,
-            preferred_provider=provider
+            preferred_provider=provider,
+            prompt_version="v2.0.0"
         )
 
         extracted_data = ai_response.content_json or {}

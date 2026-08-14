@@ -120,7 +120,7 @@ RULES:
         prompt_hash = hashlib.sha256((system_prompt + user_prompt).encode('utf-8')).hexdigest()
 
         ai_req = AIRequest(
-            task_type="ANALYTICS_SUMMARY",
+            task_type="ADMIN_TEACHER_ANALYTICS",
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             temperature=0.2
@@ -131,7 +131,8 @@ RULES:
             request=ai_req,
             organization_id=teacher.organization_id,
             user_id=teacher.id,
-            preferred_provider=provider
+            preferred_provider=provider,
+            prompt_version="v1.2.0"
         )
 
         summary_text = ai_resp.content_text or (

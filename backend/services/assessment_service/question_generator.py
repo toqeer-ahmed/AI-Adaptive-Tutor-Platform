@@ -74,7 +74,8 @@ OUTPUT FORMAT (JSON Object):
             request=request,
             organization_id=creator.organization_id,
             user_id=creator.id,
-            preferred_provider=provider
+            preferred_provider=provider,
+            prompt_version="v2.0.0"
         )
 
         raw_questions = (ai_response.content_json or {}).get("questions", [])

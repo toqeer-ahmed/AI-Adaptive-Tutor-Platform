@@ -17,5 +17,13 @@ class AIResponse(BaseModel):
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
-    latency_ms: int
+    latency_ms: float
     cost_usd: float
+
+    @property
+    def raw_text(self) -> str:
+        return self.content_text
+
+    @property
+    def structured_output(self) -> Optional[Dict[str, Any]]:
+        return self.content_json

@@ -98,7 +98,7 @@ class TutorService:
 
         # 4. Execute AI Completion
         ai_req = AIRequest(
-            task_type="TUTOR_TURN",
+            task_type="HIGH_QUALITY_TUTORING",
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             temperature=0.3
@@ -109,7 +109,8 @@ class TutorService:
             request=ai_req,
             organization_id=student.organization_id,
             user_id=student.id,
-            preferred_provider=provider
+            preferred_provider=provider,
+            prompt_version="v2.1.0"
         )
 
         tutor_raw_response = ai_resp.content_text

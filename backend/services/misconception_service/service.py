@@ -152,7 +152,8 @@ If the error is ambiguous or does not match any taxonomy item with high confiden
             request=ai_req,
             organization_id=student.organization_id,
             user_id=student.id,
-            preferred_provider=provider
+            preferred_provider=provider,
+            prompt_version="v1.4.0"
         )
 
         proposal_json = ai_resp.content_json or {}

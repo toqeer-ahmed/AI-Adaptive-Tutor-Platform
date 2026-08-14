@@ -76,7 +76,8 @@ Return strict JSON:
             request=ai_req,
             organization_id=actor.organization_id,
             user_id=actor.id,
-            preferred_provider=provider
+            preferred_provider=provider,
+            prompt_version="v1.5.0"
         )
 
         resp_json = ai_resp.content_json or {}
