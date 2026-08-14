@@ -116,9 +116,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (
     email: string,
-    password: str,
+    password: string,
     rememberMe: boolean = true
   ): Promise<{ success: boolean; error?: string }> => {
+
     setIsLoading(true);
     try {
       const res = await apiClient.post<any>('/api/v1/auth/login', { email: email.trim().toLowerCase(), password });

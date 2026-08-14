@@ -1,7 +1,14 @@
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.compiler import compiles
 from backend.config import settings
+
+# Polyfill PostgreSQL JSONB type to JSON for SQLite compatibility
+@compiles(JSONB, 'sqlite')
+def compile_jsonb_sqlite(type_, compiler, **kw):
+    return "JSON"
 
 is_sqlite = "sqlite" in settings.DATABASE_URL
 engine_kwargs = {"echo": settings.DEBUG, "future": True}
@@ -11,6 +18,7 @@ else:
     engine_kwargs.update({"connect_args": {"check_same_thread": False}})
 
 engine = create_async_engine(settings.DATABASE_URL, **engine_kwargs)
+
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

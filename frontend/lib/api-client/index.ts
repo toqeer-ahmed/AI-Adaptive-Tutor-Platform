@@ -80,6 +80,27 @@ class ApiClient {
       body: JSON.stringify(body),
     });
   }
+
+  patch<T = any>(endpoint: string, body?: any, options?: RequestInit) {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    });
+  }
+
+  put<T = any>(endpoint: string, body?: any, options?: RequestInit) {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  }
+
+  delete<T = any>(endpoint: string, options?: RequestInit) {
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
+  }
 }
 
 export const apiClient = new ApiClient();
+

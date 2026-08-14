@@ -10,19 +10,10 @@ from backend.models.user import User, Role, UserRole
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
-async def get_db() -> AsyncGenerator[Optional[AsyncSession], None]:
-    session = None
-    try:
-        session = AsyncSessionLocal()
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncSessionLocal() as session:
         yield session
-    except Exception:
-        yield None
-    finally:
-        if session:
-            try:
-                await session.close()
-            except Exception:
-                pass
+
 
 async def get_current_user(
     token: Optional[str] = Depends(oauth2_scheme),
