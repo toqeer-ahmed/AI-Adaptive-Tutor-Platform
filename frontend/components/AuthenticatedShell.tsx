@@ -142,9 +142,10 @@ export default function AuthenticatedShell({
         ];
       case 'Parent':
         return [
-          { label: 'Parent Digest', href: '/parent/dashboard', icon: '🏡' },
-          { label: 'Mastery Progress', href: '/student/mastery', icon: '📊' },
-          { label: 'Adaptive Path', href: '/student/adaptive', icon: '🧭' },
+          { label: 'Family Dashboard', href: '/parent/dashboard', icon: '🏡' },
+          { label: 'Learning Progress', href: '/parent/progress', icon: '📊' },
+          { label: 'Assignments & Work', href: '/parent/assignments', icon: '📝' },
+          { label: 'Notification Alerts', href: '/parent/settings', icon: '🔔' },
           { label: 'My Profile', href: '/profile', icon: '👤' },
         ];
       case 'SchoolAdmin':
