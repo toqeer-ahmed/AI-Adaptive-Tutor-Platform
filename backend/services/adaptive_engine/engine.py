@@ -31,6 +31,8 @@ class AdaptiveDecisionEngine:
     @classmethod
     def make_decision(cls, ctx: AdaptiveContext) -> AdaptiveDecision:
         now = ctx.now or datetime.now(timezone.utc)
+        if now.tzinfo is None:
+            now = now.replace(tzinfo=timezone.utc)
 
         # -------------------------------------------------------------
         # PRIORITY 1: Weak Prerequisite Check
@@ -50,14 +52,18 @@ class AdaptiveDecisionEngine:
         # PRIORITY 2: Spaced Review Due Check
         # If spaced review date reached or passed, route to Spaced Review
         # -------------------------------------------------------------
-        if ctx.next_review_due_at and ctx.next_review_due_at <= now:
-            return AdaptiveDecision(
-                decision="SPACED_REVIEW",
-                target_concept_id=str(ctx.concept_id),
-                recommended_difficulty=3,
-                reason="Spaced repetition review date has been reached.",
-                priority_level=2
-            )
+        if ctx.next_review_due_at:
+            review_due = ctx.next_review_due_at
+            if review_due.tzinfo is None:
+                review_due = review_due.replace(tzinfo=timezone.utc)
+            if review_due <= now:
+                return AdaptiveDecision(
+                    decision="SPACED_REVIEW",
+                    target_concept_id=str(ctx.concept_id),
+                    recommended_difficulty=3,
+                    reason="Spaced repetition review date has been reached.",
+                    priority_level=2
+                )
 
         # -------------------------------------------------------------
         # PRIORITY 3: Severe Remediation Check

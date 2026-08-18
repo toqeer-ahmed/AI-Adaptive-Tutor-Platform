@@ -8,6 +8,7 @@ from backend.models.mastery import StudentMastery
 from backend.models.user import User
 from backend.services.mastery_service.service import MasteryService
 from backend.services.adaptive_engine.engine import AdaptiveDecisionEngine, AdaptiveContext, AdaptiveDecision
+from backend.services.audit_service import AuditService
 
 class AdaptiveLearningService:
     @staticmethod
@@ -59,4 +60,24 @@ class AdaptiveLearningService:
         )
 
         # 4. Make 100% Deterministic Decision (Zero LLM calls)
-        return AdaptiveDecisionEngine.make_decision(ctx)
+        decision = AdaptiveDecisionEngine.make_decision(ctx)
+
+        # 5. Log audit trail
+        await AuditService.log_event(
+            session=session,
+            action="ADAPTIVE_DECISION_GENERATED",
+            resource_type="adaptive_engine",
+            actor_id=student.id,
+            organization_id=student.organization_id,
+            resource_id=str(concept_id),
+            details={
+                "decision": decision.decision,
+                "target_concept_id": decision.target_concept_id,
+                "recommended_difficulty": decision.recommended_difficulty,
+                "priority_level": decision.priority_level,
+                "reason": decision.reason,
+                "current_mastery": sm.mastery_score
+            }
+        )
+
+        return decision
